@@ -20,14 +20,22 @@ interface Subscription {
 
 interface Snapshot {
   source: string;
+  chain: string;
   metrics: Record<string, number>;
   fetched_at: string;
+}
+
+interface StatsMeta {
+  chains: string[];
+  poll_interval: string;
 }
 
 export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
+  const [meta, setMeta] = useState<StatsMeta | null>(null);
+  const [selectedChain, setSelectedChain] = useState("All");
   const [tgChatId, setTgChatId] = useState<number | null>(null);
   const [linked, setLinked] = useState(false);
 
@@ -48,6 +56,11 @@ export default function Home() {
     fetch(`${API}/api/stats`)
       .then((r) => r.json())
       .then((data) => setSnapshots(Array.isArray(data) ? data : [data]))
+      .catch(console.error);
+
+    fetch(`${API}/api/stats/meta`)
+      .then((r) => r.json())
+      .then(setMeta)
       .catch(console.error);
   }, []);
 
@@ -89,6 +102,19 @@ export default function Home() {
 
   const subscribedEventIds = new Set(subs.map((s) => s.event_id));
 
+  const chains = meta?.chains ?? [];
+  const pollLabel = meta?.poll_interval
+    ? meta.poll_interval.replace("s", "s").replace("60s", "1 min")
+    : "1 min";
+
+  const filteredSnapshots =
+    selectedChain === "All"
+      ? snapshots
+      : snapshots.filter((s) => s.chain === selectedChain);
+
+  // Derive which categories are visible based on filtered sources
+  const visibleSources = new Set(filteredSnapshots.map((s) => s.source));
+
   const formatNumber = (v: number) => {
     if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
     if (v >= 1_000) return `$${(v / 1_000).toFixed(2)}K`;
@@ -113,13 +139,23 @@ export default function Home() {
     return formatNumber(value);
   };
 
-  // Group events by category
-  const categories = [...new Set(events.map((e) => e.category))];
+  const timeAgo = (iso: string) => {
+    const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+    if (secs < 60) return `${secs}s ago`;
+    if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+    return `${Math.floor(secs / 3600)}h ago`;
+  };
+
+  // Group events by category, filtered by visible sources
+  const filteredEvents = events.filter(
+    (e) => selectedChain === "All" || visibleSources.has(e.category)
+  );
+  const categories = [...new Set(filteredEvents.map((e) => e.category))];
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-brand mb-2">Onchain Monitor</h1>
-      <p className="text-white/50 mb-8">
+      <p className="text-white/50 mb-6">
         Monitor on-chain stats and subscribe to Telegram alerts via{" "}
         <a
           href="https://t.me/crypto_stat_monitoring_bot"
@@ -130,12 +166,37 @@ export default function Home() {
         </a>
       </p>
 
+      {/* Chain Filter */}
+      <div className="flex gap-2 mb-6">
+        {["All", ...chains].map((chain) => (
+          <button
+            key={chain}
+            onClick={() => setSelectedChain(chain)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              selectedChain === chain
+                ? "bg-brand text-black"
+                : "bg-white/10 text-white/60 hover:bg-white/20"
+            }`}
+          >
+            {chain}
+          </button>
+        ))}
+      </div>
+
       {/* Live Stats per Source */}
-      {snapshots.map((snap) => (
+      {filteredSnapshots.map((snap) => (
         <div key={snap.source} className="mb-6">
-          <h2 className="text-lg font-semibold mb-2 capitalize">
-            {snap.source}
-          </h2>
+          <div className="flex items-baseline justify-between mb-2">
+            <h2 className="text-lg font-semibold capitalize">
+              {snap.source}
+              <span className="ml-2 text-xs font-normal text-white/30 border border-white/10 rounded px-1.5 py-0.5">
+                {snap.chain}
+              </span>
+            </h2>
+            <span className="text-xs text-white/30">
+              updated {timeAgo(snap.fetched_at)} · refreshes every {pollLabel}
+            </span>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 border border-white/10 rounded-lg bg-white/5">
             {Object.entries(snap.metrics).map(([key, value]) => (
               <div key={key}>
@@ -168,7 +229,7 @@ export default function Home() {
             {cat}
           </h3>
           <div className="space-y-3">
-            {events
+            {filteredEvents
               .filter((e) => e.category === cat)
               .map((event) => (
                 <EventCard
