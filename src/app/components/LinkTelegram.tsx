@@ -45,7 +45,7 @@ export function LinkTelegram({ onLinked }: Props) {
       <h2 className="text-lg font-semibold mb-2">Link your Telegram</h2>
       <p className="text-white/50 text-sm mb-4">
         1. Open Telegram and message{" "}
-        <span className="text-brand">@OnchainMonitorBot</span> with{" "}
+        <span className="text-brand">@crypto_stat_monitoring_bot</span> with{" "}
         <code className="bg-white/10 px-1 rounded">/start</code>
         <br />
         2. Enter the 6-character code below
