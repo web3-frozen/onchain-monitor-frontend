@@ -18,18 +18,16 @@ interface Subscription {
   event_id: number;
 }
 
-interface Stats {
+interface Snapshot {
   source: string;
-  tvl: number;
-  price: number;
-  apr: number;
+  metrics: Record<string, number>;
   fetched_at: string;
 }
 
 export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
   const [subs, setSubs] = useState<Subscription[]>([]);
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [tgChatId, setTgChatId] = useState<number | null>(null);
   const [linked, setLinked] = useState(false);
 
@@ -49,7 +47,7 @@ export default function Home() {
 
     fetch(`${API}/api/stats`)
       .then((r) => r.json())
-      .then(setStats)
+      .then((data) => setSnapshots(Array.isArray(data) ? data : [data]))
       .catch(console.error);
   }, []);
 
@@ -94,41 +92,64 @@ export default function Home() {
   const formatNumber = (v: number) => {
     if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
     if (v >= 1_000) return `$${(v / 1_000).toFixed(2)}K`;
-    return `$${v.toFixed(2)}`;
+    return `$${v.toFixed(4)}`;
   };
+
+  const metricLabel = (key: string) => {
+    const labels: Record<string, string> = {
+      tvl: "TVL",
+      price: "Price",
+      apr: "APR",
+      vedust_tvl: "veDUST TVL",
+      fees_24h: "Fees (24h)",
+      fees_7d: "Fees (7d)",
+      fees_30d: "Fees (30d)",
+    };
+    return labels[key] || key;
+  };
+
+  const formatMetric = (key: string, value: number) => {
+    if (key === "apr") return `${value.toFixed(2)}%`;
+    return formatNumber(value);
+  };
+
+  // Group events by category
+  const categories = [...new Set(events.map((e) => e.category))];
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-brand mb-2">Onchain Monitor</h1>
       <p className="text-white/50 mb-8">
-        Monitor on-chain stats and subscribe to Telegram alerts
+        Monitor on-chain stats and subscribe to Telegram alerts via{" "}
+        <a
+          href="https://t.me/crypto_stat_monitoring_bot"
+          className="text-brand hover:underline"
+          target="_blank"
+        >
+          @crypto_stat_monitoring_bot
+        </a>
       </p>
 
-      {/* Stats */}
-      {stats && (
-        <div className="grid grid-cols-3 gap-4 mb-10 p-4 border border-white/10 rounded-lg bg-white/5">
-          <div>
-            <div className="text-white/50 text-xs uppercase mb-1">TVL</div>
-            <div className="text-lg font-semibold">
-              {formatNumber(stats.tvl)}
-            </div>
-          </div>
-          <div>
-            <div className="text-white/50 text-xs uppercase mb-1">
-              AVLT Price
-            </div>
-            <div className="text-lg font-semibold">
-              ${stats.price.toFixed(4)}
-            </div>
-          </div>
-          <div>
-            <div className="text-white/50 text-xs uppercase mb-1">APR</div>
-            <div className="text-lg font-semibold text-brand">
-              {stats.apr.toFixed(2)}%
-            </div>
+      {/* Live Stats per Source */}
+      {snapshots.map((snap) => (
+        <div key={snap.source} className="mb-6">
+          <h2 className="text-lg font-semibold mb-2 capitalize">
+            {snap.source}
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 border border-white/10 rounded-lg bg-white/5">
+            {Object.entries(snap.metrics).map(([key, value]) => (
+              <div key={key}>
+                <div className="text-white/50 text-xs uppercase mb-1">
+                  {metricLabel(key)}
+                </div>
+                <div className="text-lg font-semibold">
+                  {formatMetric(key, value)}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      ))}
 
       {/* Link Telegram */}
       {!linked && <LinkTelegram onLinked={handleLinked} />}
@@ -139,21 +160,30 @@ export default function Home() {
         </div>
       )}
 
-      {/* Events */}
+      {/* Events grouped by category */}
       <h2 className="text-xl font-semibold mb-4">Available Alerts</h2>
-      <div className="space-y-3">
-        {events.map((event) => (
-          <EventCard
-            key={event.id}
-            event={event}
-            isSubscribed={subscribedEventIds.has(event.id)}
-            canToggle={linked}
-            onToggle={() =>
-              handleToggle(event.id, subscribedEventIds.has(event.id))
-            }
-          />
-        ))}
-      </div>
+      {categories.map((cat) => (
+        <div key={cat} className="mb-6">
+          <h3 className="text-sm font-medium text-white/40 uppercase mb-2">
+            {cat}
+          </h3>
+          <div className="space-y-3">
+            {events
+              .filter((e) => e.category === cat)
+              .map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  isSubscribed={subscribedEventIds.has(event.id)}
+                  canToggle={linked}
+                  onToggle={() =>
+                    handleToggle(event.id, subscribedEventIds.has(event.id))
+                  }
+                />
+              ))}
+          </div>
+        </div>
+      ))}
 
       {events.length === 0 && (
         <p className="text-white/30 text-center py-8">Loading events...</p>
