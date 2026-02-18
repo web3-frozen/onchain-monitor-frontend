@@ -46,7 +46,7 @@ export function EventCard({
 
   const [direction, setDirection] = useState(isMerklAlert ? "any" : isMaxpainAlert ? "long" : isValueAlert ? "higher" : "drop");
   const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : 10);
-  const [windowMinutes, setWindowMinutes] = useState(1);
+  const [windowMinutes, setWindowMinutes] = useState(isMaxpainAlert ? 1440 : 1);
   const [reportHour, setReportHour] = useState(8);
   const [thresholdValue, setThresholdValue] = useState(isMerklAlert ? 10 : isMaxpainAlert ? 1 : 50);
   const [coin, setCoin] = useState(isMerklAlert ? "ALL" : "BTC");
@@ -125,6 +125,17 @@ export function EventCard({
                 {["BTC", "ETH", "SOL", "XRP", "DOGE", "ADA", "AVAX", "LINK", "DOT", "MATIC"].map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
+              </select>
+              <select
+                value={windowMinutes}
+                onChange={(e) => setWindowMinutes(Number(e.target.value))}
+                className={selectCls}
+              >
+                <option value={720}>12h</option>
+                <option value={1440}>24h</option>
+                <option value={2880}>48h</option>
+                <option value={4320}>3d</option>
+                <option value={10080}>7d</option>
               </select>
               <span>price within</span>
               <input
@@ -213,7 +224,7 @@ export function EventCard({
           ) : isMaxpainAlert ? (
             <button
               onClick={() =>
-                onSubscribe(event.id, undefined, undefined, direction, undefined, thresholdValue, coin)
+                onSubscribe(event.id, undefined, windowMinutes, direction, undefined, thresholdValue, coin)
               }
               disabled={!canToggle}
               className={btnCls}

@@ -156,6 +156,17 @@ export function SubscriptionRow({
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
+              <select
+                value={windowMinutes}
+                onChange={(e) => setWindowMinutes(Number(e.target.value))}
+                className={selectCls}
+              >
+                <option value={720}>12h</option>
+                <option value={1440}>24h</option>
+                <option value={2880}>48h</option>
+                <option value={4320}>3d</option>
+                <option value={10080}>7d</option>
+              </select>
               <span>price within</span>
               <input
                 type="number"
