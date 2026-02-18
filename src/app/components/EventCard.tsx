@@ -122,7 +122,7 @@ export function EventCard({
                 onChange={(e) => setCoin(e.target.value)}
                 className={selectCls}
               >
-                {["BTC", "ETH", "SOL", "XRP", "DOGE", "ADA", "AVAX", "LINK", "DOT", "MATIC"].map((c) => (
+                {["BTC", "ETH"].map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
@@ -136,6 +136,8 @@ export function EventCard({
                 <option value={2880}>48h</option>
                 <option value={4320}>3d</option>
                 <option value={10080}>7d</option>
+                <option value={20160}>2w</option>
+                <option value={43200}>1M</option>
               </select>
               <span>price within</span>
               <input
