@@ -110,7 +110,7 @@ export function SubscriptionRow({
                 onChange={(e) => setCoin(e.target.value)}
                 className={selectCls}
               >
-                {["ALL", "LEND", "BORROW", "HOLD"].map((a) => (
+                {["ALL", "LEND", "BORROW", "HOLD", "LEND,HOLD"].map((a) => (
                   <option key={a} value={a}>{a}</option>
                 ))}
               </select>
