@@ -68,6 +68,11 @@ export function EventCard({
             >
               {event.category}
             </span>
+            {isMaxpainAlert && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/50 text-amber-400 border border-amber-500/30 font-semibold uppercase tracking-wider">
+                Beta
+              </span>
+            )}
           </div>
 
           {isMerklAlert ? (
@@ -113,50 +118,55 @@ export function EventCard({
               </select>
             </div>
           ) : isMaxpainAlert ? (
-            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
-              <span>Alert when</span>
-              <select
-                value={coin}
-                onChange={(e) => setCoin(e.target.value)}
-                className={selectCls}
-              >
-                {["BTC", "ETH"].map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              <select
-                value={windowMinutes}
-                onChange={(e) => setWindowMinutes(Number(e.target.value))}
-                className={selectCls}
-              >
-                <option value={720}>12h</option>
-                <option value={1440}>24h</option>
-                <option value={2880}>48h</option>
-                <option value={4320}>3d</option>
-                <option value={10080}>7d</option>
-                <option value={20160}>2w</option>
-                <option value={43200}>1M</option>
-              </select>
-              <span>price within</span>
-              <input
-                type="number"
-                min={0.1}
-                max={50}
-                step={0.1}
-                value={thresholdValue}
-                onChange={(e) => setThresholdValue(Number(e.target.value))}
-                className={inputCls}
-              />
-              <span>% of</span>
-              <select
-                value={direction}
-                onChange={(e) => setDirection(e.target.value)}
-                className={selectCls}
-              >
-                <option value="long">long max pain</option>
-                <option value="short">short max pain</option>
-              </select>
-            </div>
+            <>
+              <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+                <span>Alert when</span>
+                <select
+                  value={coin}
+                  onChange={(e) => setCoin(e.target.value)}
+                  className={selectCls}
+                >
+                  {["BTC", "ETH"].map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+                <select
+                  value={windowMinutes}
+                  onChange={(e) => setWindowMinutes(Number(e.target.value))}
+                  className={selectCls}
+                >
+                  <option value={720}>12h</option>
+                  <option value={1440}>24h</option>
+                  <option value={2880}>48h</option>
+                  <option value={4320}>3d</option>
+                  <option value={10080}>7d</option>
+                  <option value={20160}>2w</option>
+                  <option value={43200}>1M</option>
+                </select>
+                <span>price within</span>
+                <input
+                  type="number"
+                  min={0.1}
+                  max={50}
+                  step={0.1}
+                  value={thresholdValue}
+                  onChange={(e) => setThresholdValue(Number(e.target.value))}
+                  className={inputCls}
+                />
+                <span>% of</span>
+                <select
+                  value={direction}
+                  onChange={(e) => setDirection(e.target.value)}
+                  className={selectCls}
+                >
+                  <option value="long">long max pain</option>
+                  <option value="short">short max pain</option>
+                </select>
+              </div>
+              <p className="text-[11px] text-amber-400/70 mt-1.5">
+                ⚠️ Beta feature — still under testing. Not recommended to enable unless you are aware of potential inaccuracies.
+              </p>
+            </>
           ) : isMetricAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
               <span>{event.description}</span>
