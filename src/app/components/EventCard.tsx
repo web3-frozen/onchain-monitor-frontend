@@ -42,9 +42,7 @@ export function EventCard({
   const isDailyReport = event.name.endsWith("_daily_report");
   const isMaxpainAlert = event.name === "general_maxpain_alert";
   const isMerklAlert = event.name === "general_merkl_alert";
-  const isValueAlert = isMetricAlert && event.category === "general";
-
-  const [direction, setDirection] = useState(isMerklAlert ? "any" : isMaxpainAlert ? "long" : isValueAlert ? "higher" : "drop");
+  const [direction, setDirection] = useState(isMerklAlert ? "any" : isMaxpainAlert ? "long" : "drop");
   const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : 10);
   const [windowMinutes, setWindowMinutes] = useState(isMaxpainAlert ? 1440 : 1);
   const [reportHour, setReportHour] = useState(8);
@@ -159,7 +157,7 @@ export function EventCard({
                 <option value="short">short max pain</option>
               </select>
             </div>
-          ) : isValueAlert ? (
+          ) : isMetricAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
               <span>{event.description}</span>
               <select
@@ -226,16 +224,6 @@ export function EventCard({
             <button
               onClick={() =>
                 onSubscribe(event.id, undefined, windowMinutes, direction, undefined, thresholdValue, coin)
-              }
-              disabled={!canToggle}
-              className={btnCls}
-            >
-              Subscribe
-            </button>
-          ) : isValueAlert ? (
-            <button
-              onClick={() =>
-                onSubscribe(event.id, undefined, undefined, direction, undefined, thresholdValue)
               }
               disabled={!canToggle}
               className={btnCls}
