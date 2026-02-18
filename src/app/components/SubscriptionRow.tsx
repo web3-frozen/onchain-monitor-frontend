@@ -115,7 +115,7 @@ export function SubscriptionRow({
             </div>
           ) : isDailyReport ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
-              <span>{event?.description.replace(/^Daily UTC\+8 report\s*—\s*/, "")} at</span>
+              <span>{event?.description.replace(/^Daily UTC\+8 report\s*—\s*/, (event?.category.charAt(0).toUpperCase() + event?.category.slice(1)) + " report — ")} at</span>
               <select
                 value={reportHour}
                 onChange={(e) => setReportHour(Number(e.target.value))}
