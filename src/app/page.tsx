@@ -16,12 +16,15 @@ interface Event {
 interface Subscription {
   id: number;
   event_id: number;
+  threshold_pct: number;
+  window_minutes: number;
 }
 
 interface Snapshot {
   source: string;
   chain: string;
   metrics: Record<string, number>;
+  data_sources: Record<string, string>;
   fetched_at: string;
 }
 
@@ -82,25 +85,37 @@ export default function Home() {
     localStorage.setItem("tg_chat_id", String(chatId));
   };
 
-  const handleToggle = async (eventId: number, isSubscribed: boolean) => {
+  const handleSubscribe = async (
+    eventId: number,
+    thresholdPct?: number,
+    windowMinutes?: number
+  ) => {
     if (!tgChatId) return;
 
-    if (isSubscribed) {
-      const sub = subs.find((s) => s.event_id === eventId);
-      if (sub) {
-        await fetch(`${API}/api/subscriptions/${sub.id}`, { method: "DELETE" });
-      }
-    } else {
-      await fetch(`${API}/api/subscriptions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tg_chat_id: tgChatId, event_id: eventId }),
-      });
+    await fetch(`${API}/api/subscriptions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tg_chat_id: tgChatId,
+        event_id: eventId,
+        threshold_pct: thresholdPct ?? 10,
+        window_minutes: windowMinutes ?? 1,
+      }),
+    });
+    loadSubs();
+  };
+
+  const handleUnsubscribe = async (eventId: number) => {
+    if (!tgChatId) return;
+    const sub = subs.find((s) => s.event_id === eventId);
+    if (sub) {
+      await fetch(`${API}/api/subscriptions/${sub.id}`, { method: "DELETE" });
     }
     loadSubs();
   };
 
   const subscribedEventIds = new Set(subs.map((s) => s.event_id));
+  const subsMap = new Map(subs.map((s) => [s.event_id, s]));
 
   const chains = meta?.chains ?? [];
   const pollLabel = meta?.poll_interval
@@ -206,6 +221,11 @@ export default function Home() {
                 <div className="text-lg font-semibold">
                   {formatMetric(key, value)}
                 </div>
+                {snap.data_sources?.[key] && (
+                  <div className="text-[10px] text-white/25 mt-0.5">
+                    via {snap.data_sources[key]}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -236,10 +256,10 @@ export default function Home() {
                   key={event.id}
                   event={event}
                   isSubscribed={subscribedEventIds.has(event.id)}
+                  subscription={subsMap.get(event.id)}
                   canToggle={linked}
-                  onToggle={() =>
-                    handleToggle(event.id, subscribedEventIds.has(event.id))
-                  }
+                  onSubscribe={handleSubscribe}
+                  onUnsubscribe={handleUnsubscribe}
                 />
               ))}
           </div>
