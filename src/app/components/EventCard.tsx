@@ -41,14 +41,15 @@ export function EventCard({
   const isMetricAlert = event.name.endsWith("_metric_alert");
   const isDailyReport = event.name.endsWith("_daily_report");
   const isMaxpainAlert = event.name === "general_maxpain_alert";
+  const isMerklAlert = event.name === "general_merkl_alert";
   const isValueAlert = isMetricAlert && event.category === "general";
 
-  const [direction, setDirection] = useState(isMaxpainAlert ? "long" : isValueAlert ? "higher" : "drop");
-  const [thresholdPct, setThresholdPct] = useState(10);
+  const [direction, setDirection] = useState(isMerklAlert ? "any" : isMaxpainAlert ? "long" : isValueAlert ? "higher" : "drop");
+  const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : 10);
   const [windowMinutes, setWindowMinutes] = useState(1);
   const [reportHour, setReportHour] = useState(8);
-  const [thresholdValue, setThresholdValue] = useState(isMaxpainAlert ? 1 : 50);
-  const [coin, setCoin] = useState("BTC");
+  const [thresholdValue, setThresholdValue] = useState(isMerklAlert ? 10 : isMaxpainAlert ? 1 : 50);
+  const [coin, setCoin] = useState(isMerklAlert ? "ALL" : "BTC");
 
   const inputCls =
     "w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none";
@@ -71,7 +72,49 @@ export function EventCard({
             </span>
           </div>
 
-          {isMaxpainAlert ? (
+          {isMerklAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>Alert when</span>
+              <select
+                value={coin}
+                onChange={(e) => setCoin(e.target.value)}
+                className={selectCls}
+              >
+                {["ALL", "LEND", "BORROW", "HOLD"].map((a) => (
+                  <option key={a} value={a}>{a}</option>
+                ))}
+              </select>
+              <span>APR &ge;</span>
+              <input
+                type="number"
+                min={1}
+                max={500}
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>% TVL &ge;</span>
+              <input
+                type="number"
+                min={0.1}
+                max={100}
+                step={0.1}
+                value={thresholdPct}
+                onChange={(e) => setThresholdPct(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>M</span>
+              <select
+                value={direction}
+                onChange={(e) => setDirection(e.target.value)}
+                className={selectCls}
+              >
+                <option value="stablecoin">Stablecoin only</option>
+                <option value="non-stablecoin">Non-stablecoin</option>
+                <option value="any">Any token</option>
+              </select>
+            </div>
+          ) : isMaxpainAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
               <span>Alert when</span>
               <select
@@ -157,7 +200,17 @@ export function EventCard({
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {isMaxpainAlert ? (
+          {isMerklAlert ? (
+            <button
+              onClick={() =>
+                onSubscribe(event.id, thresholdPct, undefined, direction, undefined, thresholdValue, coin)
+              }
+              disabled={!canToggle}
+              className={btnCls}
+            >
+              Subscribe
+            </button>
+          ) : isMaxpainAlert ? (
             <button
               onClick={() =>
                 onSubscribe(event.id, undefined, undefined, direction, undefined, thresholdValue, coin)
