@@ -161,10 +161,11 @@ export default function Home() {
     ? meta.poll_interval.replace("s", "s").replace("60s", "1 min")
     : "1 min";
 
-  const filteredSnapshots =
+  const filteredSnapshots = (
     selectedChain === "All"
       ? snapshots
-      : snapshots.filter((s) => s.chain === selectedChain);
+      : snapshots.filter((s) => s.chain === selectedChain)
+  ).sort((a, b) => (a.source === "general" ? -1 : b.source === "general" ? 1 : 0));
 
   const visibleSources = new Set(filteredSnapshots.map((s) => s.source));
 
@@ -204,7 +205,9 @@ export default function Home() {
   const filteredEvents = events.filter(
     (e) => selectedChain === "All" || visibleSources.has(e.category)
   );
-  const categories = [...new Set(filteredEvents.map((e) => e.category))];
+  const categories = [...new Set(filteredEvents.map((e) => e.category))].sort(
+    (a, b) => (a === "general" ? -1 : b === "general" ? 1 : 0)
+  );
 
   // Filter subscriptions by visible sources
   const filteredSubs = subs.filter((s) => {
