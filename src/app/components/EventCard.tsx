@@ -19,7 +19,8 @@ interface Props {
     windowMinutes?: number,
     direction?: string,
     reportHour?: number,
-    thresholdValue?: number
+    thresholdValue?: number,
+    coin?: string
   ) => void;
   onUnsubscribe?: (eventId: number) => void;
 }
@@ -39,13 +40,15 @@ export function EventCard({
 }: Props) {
   const isMetricAlert = event.name.endsWith("_metric_alert");
   const isDailyReport = event.name.endsWith("_daily_report");
+  const isMaxpainAlert = event.name === "general_maxpain_alert";
   const isValueAlert = isMetricAlert && event.category === "general";
 
-  const [direction, setDirection] = useState(isValueAlert ? "higher" : "drop");
+  const [direction, setDirection] = useState(isMaxpainAlert ? "long" : isValueAlert ? "higher" : "drop");
   const [thresholdPct, setThresholdPct] = useState(10);
   const [windowMinutes, setWindowMinutes] = useState(1);
   const [reportHour, setReportHour] = useState(8);
-  const [thresholdValue, setThresholdValue] = useState(50);
+  const [thresholdValue, setThresholdValue] = useState(isMaxpainAlert ? 1 : 50);
+  const [coin, setCoin] = useState("BTC");
 
   const inputCls =
     "w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none";
@@ -68,28 +71,41 @@ export function EventCard({
             </span>
           </div>
 
-          {isValueAlert ? (
+          {isMaxpainAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
-              <span>{event.description}</span>
+              <span>Alert when</span>
+              <select
+                value={coin}
+                onChange={(e) => setCoin(e.target.value)}
+                className={selectCls}
+              >
+                {["BTC", "ETH", "SOL", "XRP", "DOGE", "ADA", "AVAX", "LINK", "DOT", "MATIC"].map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <span>price within</span>
+              <input
+                type="number"
+                min={0.1}
+                max={50}
+                step={0.1}
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>% of</span>
               <select
                 value={direction}
                 onChange={(e) => setDirection(e.target.value)}
                 className={selectCls}
               >
-                <option value="higher">higher than</option>
-                <option value="lower">lower than</option>
+                <option value="long">long max pain</option>
+                <option value="short">short max pain</option>
               </select>
-              <input
-                type="number"
-                min={0}
-                max={100}
-                value={thresholdValue}
-                onChange={(e) => setThresholdValue(Number(e.target.value))}
-                className={inputCls}
-              />
             </div>
-          ) : isMetricAlert ? (
+          ) : isValueAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>{event.description}</span>
               <span>{event.description}</span>
               <select
                 value={direction}
@@ -141,7 +157,17 @@ export function EventCard({
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {isValueAlert ? (
+          {isMaxpainAlert ? (
+            <button
+              onClick={() =>
+                onSubscribe(event.id, undefined, undefined, direction, undefined, thresholdValue, coin)
+              }
+              disabled={!canToggle}
+              className={btnCls}
+            >
+              Subscribe
+            </button>
+          ) : isValueAlert ? (
             <button
               onClick={() =>
                 onSubscribe(event.id, undefined, undefined, direction, undefined, thresholdValue)

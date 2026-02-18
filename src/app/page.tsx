@@ -22,6 +22,7 @@ interface Subscription {
   direction: string;
   report_hour: number;
   threshold_value: number;
+  coin: string;
 }
 
 interface Snapshot {
@@ -108,7 +109,8 @@ export default function Home() {
     windowMinutes?: number,
     direction?: string,
     reportHour?: number,
-    thresholdValue?: number
+    thresholdValue?: number,
+    coin?: string
   ) => {
     if (!tgChatId) return;
     await fetch(`${API}/api/subscriptions`, {
@@ -122,6 +124,7 @@ export default function Home() {
         direction: direction ?? "drop",
         report_hour: reportHour ?? 8,
         threshold_value: thresholdValue ?? 0,
+        coin: coin ?? "",
       }),
     });
     loadSubs();
@@ -133,7 +136,8 @@ export default function Home() {
     windowMinutes: number,
     direction: string,
     reportHour: number,
-    thresholdValue: number
+    thresholdValue: number,
+    coin: string
   ) => {
     await fetch(`${API}/api/subscriptions/${subId}`, {
       method: "PUT",
@@ -144,6 +148,7 @@ export default function Home() {
         direction,
         report_hour: reportHour,
         threshold_value: thresholdValue,
+        coin,
       }),
     });
     loadSubs();

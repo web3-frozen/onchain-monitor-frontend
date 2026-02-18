@@ -10,6 +10,7 @@ interface Subscription {
   direction: string;
   report_hour: number;
   threshold_value: number;
+  coin: string;
 }
 
 interface Event {
@@ -28,7 +29,8 @@ interface Props {
     windowMinutes: number,
     direction: string,
     reportHour: number,
-    thresholdValue: number
+    thresholdValue: number,
+    coin: string
   ) => void;
   onDelete: (subId: number) => void;
 }
@@ -47,6 +49,7 @@ export function SubscriptionRow({
 }: Props) {
   const isMetricAlert = event?.name.endsWith("_metric_alert");
   const isDailyReport = event?.name.endsWith("_daily_report");
+  const isMaxpainAlert = event?.name === "general_maxpain_alert";
   const isValueAlert = isMetricAlert && event?.category === "general";
 
   const [direction, setDirection] = useState(subscription.direction);
@@ -58,6 +61,7 @@ export function SubscriptionRow({
   const [thresholdValue, setThresholdValue] = useState(
     subscription.threshold_value ?? 50
   );
+  const [coin, setCoin] = useState(subscription.coin ?? "BTC");
 
   useEffect(() => {
     setDirection(subscription.direction);
@@ -65,6 +69,7 @@ export function SubscriptionRow({
     setWindowMinutes(subscription.window_minutes);
     setReportHour(subscription.report_hour ?? 8);
     setThresholdValue(subscription.threshold_value ?? 50);
+    setCoin(subscription.coin ?? "BTC");
   }, [subscription]);
 
   const hasChanges =
@@ -72,7 +77,8 @@ export function SubscriptionRow({
     thresholdPct !== subscription.threshold_pct ||
     windowMinutes !== subscription.window_minutes ||
     reportHour !== (subscription.report_hour ?? 8) ||
-    thresholdValue !== (subscription.threshold_value ?? 0);
+    thresholdValue !== (subscription.threshold_value ?? 0) ||
+    coin !== (subscription.coin ?? "");
 
   const category = event?.category ?? "general";
 
@@ -95,7 +101,39 @@ export function SubscriptionRow({
             </span>
           </div>
 
-          {isValueAlert ? (
+          {isMaxpainAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>Alert when</span>
+              <select
+                value={coin}
+                onChange={(e) => setCoin(e.target.value)}
+                className={selectCls}
+              >
+                {["BTC", "ETH", "SOL", "XRP", "DOGE", "ADA", "AVAX", "LINK", "DOT", "MATIC"].map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <span>price within</span>
+              <input
+                type="number"
+                min={0.1}
+                max={50}
+                step={0.1}
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>% of</span>
+              <select
+                value={direction}
+                onChange={(e) => setDirection(e.target.value)}
+                className={selectCls}
+              >
+                <option value="long">long max pain</option>
+                <option value="short">short max pain</option>
+              </select>
+            </div>
+          ) : isValueAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
               <span>{event?.description}</span>
               <select
@@ -168,10 +206,10 @@ export function SubscriptionRow({
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {(isMetricAlert || isDailyReport) && hasChanges && (
+          {(isMetricAlert || isDailyReport || isMaxpainAlert) && hasChanges && (
             <button
               onClick={() =>
-                onUpdate(subscription.id, thresholdPct, windowMinutes, direction, reportHour, thresholdValue)
+                onUpdate(subscription.id, thresholdPct, windowMinutes, direction, reportHour, thresholdValue, coin)
               }
               className="px-3 py-1.5 rounded-lg text-sm font-medium bg-brand/20 text-brand border border-brand/40 hover:bg-brand/30 transition-all"
             >
