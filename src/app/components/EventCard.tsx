@@ -31,10 +31,6 @@ const categoryColors: Record<string, string> = {
   general: "bg-blue-900/40 text-blue-400",
 };
 
-const categoryLabels: Record<string, string> = {
-  general: "Fear & Greed",
-};
-
 export function EventCard({
   event,
   canToggle,
@@ -72,7 +68,7 @@ export function EventCard({
                 categoryColors[event.category] || categoryColors.general
               }`}
             >
-              {categoryLabels[event.category] || event.category}
+              {event.category}
             </span>
             {isMaxpainAlert && (
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/50 text-amber-400 border border-amber-500/30 font-semibold uppercase tracking-wider">
