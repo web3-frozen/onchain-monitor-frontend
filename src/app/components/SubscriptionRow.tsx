@@ -51,7 +51,7 @@ export function SubscriptionRow({
   const isDailyReport = event?.name.endsWith("_daily_report");
   const isMaxpainAlert = event?.name === "general_maxpain_alert";
   const isMerklAlert = event?.name === "general_merkl_alert";
-  const isValueAlert = isMetricAlert && event?.category === "general";
+  const isValueAlert = isMetricAlert && (subscription.direction === "higher" || subscription.direction === "lower");
 
   const [direction, setDirection] = useState(subscription.direction);
   const [thresholdPct, setThresholdPct] = useState(subscription.threshold_pct);

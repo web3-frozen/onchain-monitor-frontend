@@ -42,7 +42,9 @@ export function EventCard({
   const isDailyReport = event.name.endsWith("_daily_report");
   const isMaxpainAlert = event.name === "general_maxpain_alert";
   const isMerklAlert = event.name === "general_merkl_alert";
-  const [direction, setDirection] = useState(isMerklAlert ? "any" : isMaxpainAlert ? "long" : "drop");
+  const isGeneralMetric = isMetricAlert && event.category === "general";
+  const [alertMode, setAlertMode] = useState<"pct" | "value">(isGeneralMetric ? "value" : "pct");
+  const [direction, setDirection] = useState(isMerklAlert ? "any" : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop");
   const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : 10);
   const [windowMinutes, setWindowMinutes] = useState(isMaxpainAlert ? 1440 : 1);
   const [reportHour, setReportHour] = useState(8);
@@ -170,33 +172,82 @@ export function EventCard({
           ) : isMetricAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
               <span>{event.description}</span>
-              <select
-                value={direction}
-                onChange={(e) => setDirection(e.target.value)}
-                className={selectCls}
-              >
-                <option value="drop">drop</option>
-                <option value="increase">increase</option>
-              </select>
-              <span>&gt;</span>
-              <input
-                type="number"
-                min={1}
-                max={100}
-                value={thresholdPct}
-                onChange={(e) => setThresholdPct(Number(e.target.value))}
-                className={inputCls}
-              />
-              <span>% in</span>
-              <input
-                type="number"
-                min={1}
-                max={60}
-                value={windowMinutes}
-                onChange={(e) => setWindowMinutes(Number(e.target.value))}
-                className={inputCls}
-              />
-              <span>minute(s)</span>
+              {isGeneralMetric && (
+                <select
+                  value={alertMode}
+                  onChange={(e) => {
+                    const mode = e.target.value as "pct" | "value";
+                    setAlertMode(mode);
+                    setDirection(mode === "value" ? "higher" : "drop");
+                  }}
+                  className={selectCls}
+                >
+                  <option value="value">threshold</option>
+                  <option value="pct">% change</option>
+                </select>
+              )}
+              {alertMode === "value" && isGeneralMetric ? (
+                <>
+                  <select
+                    value={direction}
+                    onChange={(e) => setDirection(e.target.value)}
+                    className={selectCls}
+                  >
+                    <option value="higher">higher than</option>
+                    <option value="lower">lower than</option>
+                  </select>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={thresholdValue}
+                    onChange={(e) => setThresholdValue(Number(e.target.value))}
+                    className={inputCls}
+                  />
+                </>
+              ) : (
+                <>
+                  {!isGeneralMetric && (
+                    <select
+                      value={direction}
+                      onChange={(e) => setDirection(e.target.value)}
+                      className={selectCls}
+                    >
+                      <option value="drop">drop</option>
+                      <option value="increase">increase</option>
+                    </select>
+                  )}
+                  {isGeneralMetric && (
+                    <select
+                      value={direction}
+                      onChange={(e) => setDirection(e.target.value)}
+                      className={selectCls}
+                    >
+                      <option value="drop">drop</option>
+                      <option value="increase">increase</option>
+                    </select>
+                  )}
+                  <span>&gt;</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={thresholdPct}
+                    onChange={(e) => setThresholdPct(Number(e.target.value))}
+                    className={inputCls}
+                  />
+                  <span>% in</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={60}
+                    value={windowMinutes}
+                    onChange={(e) => setWindowMinutes(Number(e.target.value))}
+                    className={inputCls}
+                  />
+                  <span>minute(s)</span>
+                </>
+              )}
             </div>
           ) : isDailyReport ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
@@ -243,7 +294,9 @@ export function EventCard({
           ) : isMetricAlert ? (
             <button
               onClick={() =>
-                onSubscribe(event.id, thresholdPct, windowMinutes, direction)
+                alertMode === "value" && isGeneralMetric
+                  ? onSubscribe(event.id, undefined, undefined, direction, undefined, thresholdValue)
+                  : onSubscribe(event.id, thresholdPct, windowMinutes, direction)
               }
               disabled={!canToggle}
               className={btnCls}
