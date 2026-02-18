@@ -1,11 +1,13 @@
 # Onchain Monitor — Frontend
 
-A Next.js dashboard for subscribing to on-chain monitoring alerts via Telegram. Users can browse available events, link their Telegram account, and manage subscriptions.
+A Next.js dashboard for monitoring on-chain DeFi metrics and managing Telegram alert subscriptions. Displays live data from multiple sources grouped by chain, with configurable alerting.
 
 ## Features
 
-- **Multi-source dashboard** — displays live metrics from all registered data sources (Altura, Neverland, etc.)
-- **Event subscriptions** — subscribe to drop alerts and daily reports per source
+- **Multi-source dashboard** — live metrics from Altura, Neverland, Fear & Greed, Max Pain, and Merkl
+- **Chain-based grouping** — snapshots grouped by chain (General, HyperEVM, etc.) with source subtitles
+- **Configurable alerts** — subscribe with custom thresholds, directions (increase/drop), and time windows
+- **Merkl yield discovery** — filter by APR, TVL, action (LEND/HOLD/BORROW), stablecoin preference
 - **Telegram linking** — link your Telegram account with a 6-character OTP via `@crypto_stat_monitoring_bot`
 - **Responsive UI** — dark theme, Tailwind CSS
 
@@ -15,16 +17,35 @@ A Next.js dashboard for subscribing to on-chain monitoring alerts via Telegram. 
 - [Tailwind CSS 3](https://tailwindcss.com/)
 - TypeScript
 
+## Dashboard Layout
+
+Metrics are grouped by chain:
+- **General** — Fear & Greed Index, BTC/ETH Max Pain (24h), Merkl opportunities
+- **HyperEVM** — Altura (TVL, AVLT Price, APR), Neverland (TVL, DUST Price, Fees)
+
+Each source shows a subtitle for attribution. Max Pain values display "N/A" when data is insufficient. Interval labels (e.g., "(24h)") indicate the calculation window.
+
+## Subscription Types
+
+| Alert Type | User Configures |
+|------------|-----------------|
+| **Value alert** | Metric, threshold value, direction (above/below) |
+| **Metric alert** | Metric, % change, direction (increase/drop), time window (minutes) |
+| **Max Pain alert** | Coin (BTC/ETH), position (LONG/SHORT), % proximity |
+| **Merkl alert** | Min APR, min TVL, action (LEND/HOLD/BORROW/LEND,HOLD), stablecoin filter |
+| **Daily report** | Report time (UTC+8) |
+
 ## Project Structure
 
 ```
 src/app/
-  page.tsx                  # Main dashboard page
+  page.tsx                  # Main dashboard — chain-based snapshot grouping
   layout.tsx                # Root layout
   globals.css               # Global styles + Tailwind imports
   components/
-    EventCard.tsx            # Event subscription card
+    EventCard.tsx            # Event subscription card with configurable inputs
     LinkTelegram.tsx         # Telegram OTP linking form
+    SubscriptionRow.tsx      # Active subscription display with edit/delete
 ```
 
 ## API Integration
