@@ -217,6 +217,12 @@ export default function Home() {
       fear_greed_index: "Fear & Greed",
       opportunities: "Opportunities",
       top_apr: "Top APR",
+      BTC_price: "BTC Price",
+      BTC_long_maxpain: "BTC Long Max Pain (24h)",
+      BTC_short_maxpain: "BTC Short Max Pain (24h)",
+      ETH_price: "ETH Price",
+      ETH_long_maxpain: "ETH Long Max Pain (24h)",
+      ETH_short_maxpain: "ETH Short Max Pain (24h)",
     };
     return labels[key] || key;
   };
@@ -225,6 +231,7 @@ export default function Home() {
     if (key === "apr" || key === "top_apr") return `${value.toFixed(2)}%`;
     if (key === "fear_greed_index") return `${value.toFixed(0)} / 100`;
     if (key === "opportunities") return `${value.toFixed(0)}`;
+    if (key.includes("maxpain") && value === 0) return "N/A";
     return formatNumber(value);
   };
 
@@ -279,39 +286,101 @@ export default function Home() {
         ))}
       </div>
 
-      {/* Live Stats per Source */}
-      {filteredSnapshots.map((snap) => (
-        <div key={snap.source} className="mb-6">
-          <div className="flex items-baseline justify-between mb-2">
-            <h2 className="text-lg font-semibold capitalize">
-              {snap.source}
-              <span className="ml-2 text-xs font-normal text-white/30 border border-white/10 rounded px-1.5 py-0.5">
-                {snap.chain}
-              </span>
-            </h2>
-            <span className="text-xs text-white/30">
-              updated {timeAgo(snap.fetched_at)} · refreshes every {pollLabel}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 border border-white/10 rounded-lg bg-white/5">
-            {Object.entries(snap.metrics).map(([key, value]) => (
-              <div key={key}>
-                <div className="text-white/50 text-xs uppercase mb-1">
-                  {metricLabel(key, snap.source)}
-                </div>
-                <div className="text-lg font-semibold">
-                  {formatMetric(key, value)}
-                </div>
-                {snap.data_sources?.[key] && (
-                  <div className="text-[10px] text-white/25 mt-0.5">
-                    via {snap.data_sources[key]}
-                  </div>
-                )}
+      {/* Live Stats — group snapshots by chain */}
+      {(() => {
+        // Group snapshots by chain
+        const chainGroups = new Map<string, Snapshot[]>();
+        for (const snap of filteredSnapshots) {
+          const g = chainGroups.get(snap.chain) || [];
+          g.push(snap);
+          chainGroups.set(snap.chain, g);
+        }
+        // Sort chains: General first
+        const sortedChains = [...chainGroups.keys()].sort((a, b) => {
+          const order = ["General", "Hyperliquid", "Monad"];
+          const ai = order.indexOf(a) === -1 ? 99 : order.indexOf(a);
+          const bi = order.indexOf(b) === -1 ? 99 : order.indexOf(b);
+          return ai - bi;
+        });
+        return sortedChains.map((chain) => {
+          const snaps = chainGroups.get(chain)!;
+          const latest = snaps.reduce((a, b) =>
+            new Date(a.fetched_at) > new Date(b.fetched_at) ? a : b
+          );
+          // Merge all metrics and data_sources from all snapshots in this chain
+          const allMetrics: Record<string, number> = {};
+          const allDataSources: Record<string, string> = {};
+          const allSourceLabels: Record<string, string> = {};
+          for (const snap of snaps) {
+            for (const [k, v] of Object.entries(snap.metrics)) {
+              allMetrics[k] = v;
+              allSourceLabels[k] = snap.source;
+            }
+            if (snap.data_sources) {
+              for (const [k, v] of Object.entries(snap.data_sources)) {
+                allDataSources[k] = v;
+              }
+            }
+          }
+          // Group metrics by source for rendering sections
+          const sourceOrder = ["general", "maxpain", "merkl", "altura", "neverland"];
+          const metricsBySource = new Map<string, [string, number][]>();
+          for (const [k, v] of Object.entries(allMetrics)) {
+            const src = allSourceLabels[k] || "unknown";
+            const arr = metricsBySource.get(src) || [];
+            arr.push([k, v]);
+            metricsBySource.set(src, arr);
+          }
+          const sortedSources = [...metricsBySource.keys()].sort(
+            (a, b) => (sourceOrder.indexOf(a) === -1 ? 99 : sourceOrder.indexOf(a)) - (sourceOrder.indexOf(b) === -1 ? 99 : sourceOrder.indexOf(b))
+          );
+
+          return (
+            <div key={chain} className="mb-6">
+              <div className="flex items-baseline justify-between mb-2">
+                <h2 className="text-lg font-semibold">
+                  {chain}
+                </h2>
+                <span className="text-xs text-white/30">
+                  updated {timeAgo(latest.fetched_at)} · refreshes every {pollLabel}
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-      ))}
+              <div className="p-4 border border-white/10 rounded-lg bg-white/5 space-y-4">
+                {sortedSources.map((src) => {
+                  const metrics = metricsBySource.get(src)!;
+                  const sourceSnap = snaps.find((s) => s.source === src);
+                  return (
+                    <div key={src}>
+                      {snaps.length > 1 && (
+                        <div className="text-xs font-medium text-white/30 uppercase mb-2 border-b border-white/5 pb-1">
+                          {src}
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {metrics.map(([key, value]) => (
+                          <div key={key}>
+                            <div className="text-white/50 text-xs uppercase mb-1">
+                              {metricLabel(key, src)}
+                            </div>
+                            <div className="text-lg font-semibold">
+                              {formatMetric(key, value)}
+                            </div>
+                            {allDataSources[key] && (
+                              <div className="text-[10px] text-white/25 mt-0.5">
+                                via {allDataSources[key]}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        });
+      })()}
 
       {/* Link Telegram */}
       {!linked && <LinkTelegram onLinked={handleLinked} />}

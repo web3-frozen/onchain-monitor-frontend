@@ -162,7 +162,6 @@ export function EventCard({
           ) : isValueAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
               <span>{event.description}</span>
-              <span>{event.description}</span>
               <select
                 value={direction}
                 onChange={(e) => setDirection(e.target.value)}
