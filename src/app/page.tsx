@@ -21,6 +21,7 @@ interface Subscription {
   window_minutes: number;
   direction: string;
   report_hour: number;
+  threshold_value: number;
 }
 
 interface Snapshot {
@@ -88,12 +89,26 @@ export default function Home() {
     localStorage.setItem("tg_chat_id", String(chatId));
   };
 
+  const handleUnlink = async () => {
+    if (!tgChatId) return;
+    await fetch(`${API}/api/unlink`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tg_chat_id: tgChatId }),
+    });
+    setTgChatId(null);
+    setLinked(false);
+    setSubs([]);
+    localStorage.removeItem("tg_chat_id");
+  };
+
   const handleSubscribe = async (
     eventId: number,
     thresholdPct?: number,
     windowMinutes?: number,
     direction?: string,
-    reportHour?: number
+    reportHour?: number,
+    thresholdValue?: number
   ) => {
     if (!tgChatId) return;
     await fetch(`${API}/api/subscriptions`, {
@@ -106,6 +121,7 @@ export default function Home() {
         window_minutes: windowMinutes ?? 1,
         direction: direction ?? "drop",
         report_hour: reportHour ?? 8,
+        threshold_value: thresholdValue ?? 0,
       }),
     });
     loadSubs();
@@ -116,7 +132,8 @@ export default function Home() {
     thresholdPct: number,
     windowMinutes: number,
     direction: string,
-    reportHour: number
+    reportHour: number,
+    thresholdValue: number
   ) => {
     await fetch(`${API}/api/subscriptions/${subId}`, {
       method: "PUT",
@@ -126,6 +143,7 @@ export default function Home() {
         window_minutes: windowMinutes,
         direction,
         report_hour: reportHour,
+        threshold_value: thresholdValue,
       }),
     });
     loadSubs();
@@ -165,12 +183,14 @@ export default function Home() {
       fees_24h: "Fees (24h)",
       fees_7d: "Fees (7d)",
       fees_30d: "Fees (30d)",
+      fear_greed_index: "Fear & Greed",
     };
     return labels[key] || key;
   };
 
   const formatMetric = (key: string, value: number) => {
     if (key === "apr") return `${value.toFixed(2)}%`;
+    if (key === "fear_greed_index") return `${value.toFixed(0)} / 100`;
     return formatNumber(value);
   };
 
@@ -261,8 +281,14 @@ export default function Home() {
       {!linked && <LinkTelegram onLinked={handleLinked} />}
 
       {linked && (
-        <div className="mb-6 p-3 border border-brand/30 rounded-lg bg-brand/5 text-sm text-brand">
-          ✅ Telegram linked (Chat ID: {tgChatId})
+        <div className="mb-6 p-3 border border-brand/30 rounded-lg bg-brand/5 text-sm text-brand flex items-center justify-between">
+          <span>✅ Telegram linked (Chat ID: {tgChatId})</span>
+          <button
+            onClick={handleUnlink}
+            className="px-3 py-1 rounded text-xs font-medium bg-white/10 text-white/50 border border-white/10 hover:bg-red-900/30 hover:text-red-400 hover:border-red-400/40 transition-all"
+          >
+            Unlink
+          </button>
         </div>
       )}
 

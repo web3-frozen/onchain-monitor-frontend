@@ -18,7 +18,8 @@ interface Props {
     thresholdPct?: number,
     windowMinutes?: number,
     direction?: string,
-    reportHour?: number
+    reportHour?: number,
+    thresholdValue?: number
   ) => void;
   onUnsubscribe?: (eventId: number) => void;
 }
@@ -37,13 +38,21 @@ export function EventCard({
   onUnsubscribe,
 }: Props) {
   const isMetricAlert = event.name.endsWith("_metric_alert");
+  const isDailyReport = event.name.endsWith("_daily_report");
+  const isValueAlert = isMetricAlert && event.category === "general";
 
-  const [direction, setDirection] = useState("drop");
+  const [direction, setDirection] = useState(isValueAlert ? "higher" : "drop");
   const [thresholdPct, setThresholdPct] = useState(10);
   const [windowMinutes, setWindowMinutes] = useState(1);
   const [reportHour, setReportHour] = useState(8);
+  const [thresholdValue, setThresholdValue] = useState(50);
 
-  const isDailyReport = event.name.endsWith("_daily_report");
+  const inputCls =
+    "w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none";
+  const selectCls =
+    "px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-sm focus:border-brand focus:outline-none cursor-pointer";
+  const btnCls =
+    "px-4 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-white/60 border border-white/20 hover:bg-brand/20 hover:text-brand hover:border-brand/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed";
 
   return (
     <div className="p-4 border border-white/10 rounded-lg bg-white/5 hover:bg-white/8 transition-colors">
@@ -59,13 +68,33 @@ export function EventCard({
             </span>
           </div>
 
-          {isMetricAlert ? (
+          {isValueAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
               <span>{event.description}</span>
               <select
                 value={direction}
                 onChange={(e) => setDirection(e.target.value)}
-                className="px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-sm focus:border-brand focus:outline-none cursor-pointer"
+                className={selectCls}
+              >
+                <option value="higher">higher than</option>
+                <option value="lower">lower than</option>
+              </select>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls}
+              />
+            </div>
+          ) : isMetricAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>{event.description}</span>
+              <select
+                value={direction}
+                onChange={(e) => setDirection(e.target.value)}
+                className={selectCls}
               >
                 <option value="drop">drop</option>
                 <option value="increase">increase</option>
@@ -77,7 +106,7 @@ export function EventCard({
                 max={100}
                 value={thresholdPct}
                 onChange={(e) => setThresholdPct(Number(e.target.value))}
-                className="w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none"
+                className={inputCls}
               />
               <span>% in</span>
               <input
@@ -86,7 +115,7 @@ export function EventCard({
                 max={60}
                 value={windowMinutes}
                 onChange={(e) => setWindowMinutes(Number(e.target.value))}
-                className="w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none"
+                className={inputCls}
               />
               <span>minute(s)</span>
             </div>
@@ -96,7 +125,7 @@ export function EventCard({
               <select
                 value={reportHour}
                 onChange={(e) => setReportHour(Number(e.target.value))}
-                className="px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-sm focus:border-brand focus:outline-none cursor-pointer"
+                className={selectCls}
               >
                 {Array.from({ length: 24 }, (_, i) => (
                   <option key={i} value={i}>
@@ -112,13 +141,23 @@ export function EventCard({
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {isMetricAlert ? (
+          {isValueAlert ? (
+            <button
+              onClick={() =>
+                onSubscribe(event.id, undefined, undefined, direction, undefined, thresholdValue)
+              }
+              disabled={!canToggle}
+              className={btnCls}
+            >
+              Subscribe
+            </button>
+          ) : isMetricAlert ? (
             <button
               onClick={() =>
                 onSubscribe(event.id, thresholdPct, windowMinutes, direction)
               }
               disabled={!canToggle}
-              className="px-4 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-white/60 border border-white/20 hover:bg-brand/20 hover:text-brand hover:border-brand/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className={btnCls}
             >
               Subscribe
             </button>
@@ -128,7 +167,7 @@ export function EventCard({
                 onSubscribe(event.id, undefined, undefined, undefined, reportHour)
               }
               disabled={!canToggle}
-              className="px-4 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-white/60 border border-white/20 hover:bg-brand/20 hover:text-brand hover:border-brand/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className={btnCls}
             >
               Subscribe
             </button>

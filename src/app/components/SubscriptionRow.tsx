@@ -9,6 +9,7 @@ interface Subscription {
   window_minutes: number;
   direction: string;
   report_hour: number;
+  threshold_value: number;
 }
 
 interface Event {
@@ -26,7 +27,8 @@ interface Props {
     thresholdPct: number,
     windowMinutes: number,
     direction: string,
-    reportHour: number
+    reportHour: number,
+    thresholdValue: number
   ) => void;
   onDelete: (subId: number) => void;
 }
@@ -45,6 +47,7 @@ export function SubscriptionRow({
 }: Props) {
   const isMetricAlert = event?.name.endsWith("_metric_alert");
   const isDailyReport = event?.name.endsWith("_daily_report");
+  const isValueAlert = isMetricAlert && event?.category === "general";
 
   const [direction, setDirection] = useState(subscription.direction);
   const [thresholdPct, setThresholdPct] = useState(subscription.threshold_pct);
@@ -52,21 +55,31 @@ export function SubscriptionRow({
     subscription.window_minutes
   );
   const [reportHour, setReportHour] = useState(subscription.report_hour ?? 8);
+  const [thresholdValue, setThresholdValue] = useState(
+    subscription.threshold_value ?? 50
+  );
 
   useEffect(() => {
     setDirection(subscription.direction);
     setThresholdPct(subscription.threshold_pct);
     setWindowMinutes(subscription.window_minutes);
     setReportHour(subscription.report_hour ?? 8);
+    setThresholdValue(subscription.threshold_value ?? 50);
   }, [subscription]);
 
   const hasChanges =
     direction !== subscription.direction ||
     thresholdPct !== subscription.threshold_pct ||
     windowMinutes !== subscription.window_minutes ||
-    reportHour !== (subscription.report_hour ?? 8);
+    reportHour !== (subscription.report_hour ?? 8) ||
+    thresholdValue !== (subscription.threshold_value ?? 0);
 
   const category = event?.category ?? "general";
+
+  const inputCls =
+    "w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none";
+  const selectCls =
+    "px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-sm focus:border-brand focus:outline-none cursor-pointer";
 
   return (
     <div className="p-4 border border-white/10 rounded-lg bg-white/5">
@@ -82,13 +95,33 @@ export function SubscriptionRow({
             </span>
           </div>
 
-          {isMetricAlert ? (
+          {isValueAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
               <span>{event?.description}</span>
               <select
                 value={direction}
                 onChange={(e) => setDirection(e.target.value)}
-                className="px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-sm focus:border-brand focus:outline-none cursor-pointer"
+                className={selectCls}
+              >
+                <option value="higher">higher than</option>
+                <option value="lower">lower than</option>
+              </select>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls}
+              />
+            </div>
+          ) : isMetricAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>{event?.description}</span>
+              <select
+                value={direction}
+                onChange={(e) => setDirection(e.target.value)}
+                className={selectCls}
               >
                 <option value="drop">drop</option>
                 <option value="increase">increase</option>
@@ -100,7 +133,7 @@ export function SubscriptionRow({
                 max={100}
                 value={thresholdPct}
                 onChange={(e) => setThresholdPct(Number(e.target.value))}
-                className="w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none"
+                className={inputCls}
               />
               <span>% in</span>
               <input
@@ -109,7 +142,7 @@ export function SubscriptionRow({
                 max={60}
                 value={windowMinutes}
                 onChange={(e) => setWindowMinutes(Number(e.target.value))}
-                className="w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none"
+                className={inputCls}
               />
               <span>minute(s)</span>
             </div>
@@ -119,7 +152,7 @@ export function SubscriptionRow({
               <select
                 value={reportHour}
                 onChange={(e) => setReportHour(Number(e.target.value))}
-                className="px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-sm focus:border-brand focus:outline-none cursor-pointer"
+                className={selectCls}
               >
                 {Array.from({ length: 24 }, (_, i) => (
                   <option key={i} value={i}>
@@ -138,7 +171,7 @@ export function SubscriptionRow({
           {(isMetricAlert || isDailyReport) && hasChanges && (
             <button
               onClick={() =>
-                onUpdate(subscription.id, thresholdPct, windowMinutes, direction, reportHour)
+                onUpdate(subscription.id, thresholdPct, windowMinutes, direction, reportHour, thresholdValue)
               }
               className="px-3 py-1.5 rounded-lg text-sm font-medium bg-brand/20 text-brand border border-brand/40 hover:bg-brand/30 transition-all"
             >
