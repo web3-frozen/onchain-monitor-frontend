@@ -92,7 +92,7 @@ export function EventCard({
             </div>
           ) : isDailyReport ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
-              <span>{event.description} at</span>
+              <span>{event.description.replace(/^Daily UTC\+8 report\s*—\s*/, "")} at</span>
               <select
                 value={reportHour}
                 onChange={(e) => setReportHour(Number(e.target.value))}
