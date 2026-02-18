@@ -156,7 +156,10 @@ export default function Home() {
 
   const eventsMap = new Map(events.map((e) => [e.id, e]));
 
-  const chains = meta?.chains ?? [];
+  const chainOrder = ["General", "Hyperliquid", "Monad"];
+  const chains = (meta?.chains ?? []).sort(
+    (a, b) => (chainOrder.indexOf(a) === -1 ? 99 : chainOrder.indexOf(a)) - (chainOrder.indexOf(b) === -1 ? 99 : chainOrder.indexOf(b))
+  );
   const pollLabel = meta?.poll_interval
     ? meta.poll_interval.replace("s", "s").replace("60s", "1 min")
     : "1 min";
