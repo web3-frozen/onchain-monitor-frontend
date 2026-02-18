@@ -20,6 +20,7 @@ interface Subscription {
   threshold_pct: number;
   window_minutes: number;
   direction: string;
+  report_hour: number;
 }
 
 interface Snapshot {
@@ -91,7 +92,8 @@ export default function Home() {
     eventId: number,
     thresholdPct?: number,
     windowMinutes?: number,
-    direction?: string
+    direction?: string,
+    reportHour?: number
   ) => {
     if (!tgChatId) return;
     await fetch(`${API}/api/subscriptions`, {
@@ -103,17 +105,9 @@ export default function Home() {
         threshold_pct: thresholdPct ?? 10,
         window_minutes: windowMinutes ?? 1,
         direction: direction ?? "drop",
+        report_hour: reportHour ?? 8,
       }),
     });
-    loadSubs();
-  };
-
-  const handleUnsubscribeDailyReport = async (eventId: number) => {
-    if (!tgChatId) return;
-    const sub = subs.find((s) => s.event_id === eventId);
-    if (sub) {
-      await fetch(`${API}/api/subscriptions/${sub.id}`, { method: "DELETE" });
-    }
     loadSubs();
   };
 
@@ -121,7 +115,8 @@ export default function Home() {
     subId: number,
     thresholdPct: number,
     windowMinutes: number,
-    direction: string
+    direction: string,
+    reportHour: number
   ) => {
     await fetch(`${API}/api/subscriptions/${subId}`, {
       method: "PUT",
@@ -130,6 +125,7 @@ export default function Home() {
         threshold_pct: thresholdPct,
         window_minutes: windowMinutes,
         direction,
+        report_hour: reportHour,
       }),
     });
     loadSubs();
@@ -140,7 +136,6 @@ export default function Home() {
     loadSubs();
   };
 
-  const subscribedEventIds = new Set(subs.map((s) => s.event_id));
   const eventsMap = new Map(events.map((e) => [e.id, e]));
 
   const chains = meta?.chains ?? [];
@@ -281,25 +276,14 @@ export default function Home() {
           <div className="space-y-3">
             {filteredEvents
               .filter((e) => e.category === cat)
-              .map((event) => {
-                const isDailyReport = event.name.endsWith("_daily_report");
-                return (
+              .map((event) => (
                   <EventCard
                     key={event.id}
                     event={event}
                     canToggle={linked}
-                    isSubscribed={
-                      isDailyReport
-                        ? subscribedEventIds.has(event.id)
-                        : undefined
-                    }
                     onSubscribe={handleSubscribe}
-                    onUnsubscribe={
-                      isDailyReport ? handleUnsubscribeDailyReport : undefined
-                    }
                   />
-                );
-              })}
+                ))}
           </div>
         </div>
       ))}

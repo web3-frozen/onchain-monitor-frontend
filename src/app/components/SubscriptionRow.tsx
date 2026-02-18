@@ -8,6 +8,7 @@ interface Subscription {
   threshold_pct: number;
   window_minutes: number;
   direction: string;
+  report_hour: number;
 }
 
 interface Event {
@@ -24,7 +25,8 @@ interface Props {
     subId: number,
     thresholdPct: number,
     windowMinutes: number,
-    direction: string
+    direction: string,
+    reportHour: number
   ) => void;
   onDelete: (subId: number) => void;
 }
@@ -42,23 +44,27 @@ export function SubscriptionRow({
   onDelete,
 }: Props) {
   const isMetricAlert = event?.name.endsWith("_metric_alert");
+  const isDailyReport = event?.name.endsWith("_daily_report");
 
   const [direction, setDirection] = useState(subscription.direction);
   const [thresholdPct, setThresholdPct] = useState(subscription.threshold_pct);
   const [windowMinutes, setWindowMinutes] = useState(
     subscription.window_minutes
   );
+  const [reportHour, setReportHour] = useState(subscription.report_hour ?? 8);
 
   useEffect(() => {
     setDirection(subscription.direction);
     setThresholdPct(subscription.threshold_pct);
     setWindowMinutes(subscription.window_minutes);
+    setReportHour(subscription.report_hour ?? 8);
   }, [subscription]);
 
   const hasChanges =
     direction !== subscription.direction ||
     thresholdPct !== subscription.threshold_pct ||
-    windowMinutes !== subscription.window_minutes;
+    windowMinutes !== subscription.window_minutes ||
+    reportHour !== (subscription.report_hour ?? 8);
 
   const category = event?.category ?? "general";
 
@@ -107,16 +113,32 @@ export function SubscriptionRow({
               />
               <span>minute(s)</span>
             </div>
+          ) : isDailyReport ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>{event?.description} at</span>
+              <select
+                value={reportHour}
+                onChange={(e) => setReportHour(Number(e.target.value))}
+                className="px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-sm focus:border-brand focus:outline-none cursor-pointer"
+              >
+                {Array.from({ length: 24 }, (_, i) => (
+                  <option key={i} value={i}>
+                    {String(i).padStart(2, "0")}:00
+                  </option>
+                ))}
+              </select>
+              <span>UTC+8</span>
+            </div>
           ) : (
             <p className="text-sm text-white/70">{event?.description}</p>
           )}
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {isMetricAlert && hasChanges && (
+          {(isMetricAlert || isDailyReport) && hasChanges && (
             <button
               onClick={() =>
-                onUpdate(subscription.id, thresholdPct, windowMinutes, direction)
+                onUpdate(subscription.id, thresholdPct, windowMinutes, direction, reportHour)
               }
               className="px-3 py-1.5 rounded-lg text-sm font-medium bg-brand/20 text-brand border border-brand/40 hover:bg-brand/30 transition-all"
             >
