@@ -1,6 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface Subscription {
+  id: number;
+  event_id: number;
+  threshold_pct: number;
+  window_minutes: number;
+  direction: string;
+}
 
 interface Event {
   id: number;
@@ -10,16 +18,15 @@ interface Event {
 }
 
 interface Props {
-  event: Event;
-  canToggle: boolean;
-  isSubscribed?: boolean;
-  onSubscribe: (
-    eventId: number,
-    thresholdPct?: number,
-    windowMinutes?: number,
-    direction?: string
+  subscription: Subscription;
+  event?: Event;
+  onUpdate: (
+    subId: number,
+    thresholdPct: number,
+    windowMinutes: number,
+    direction: string
   ) => void;
-  onUnsubscribe?: (eventId: number) => void;
+  onDelete: (subId: number) => void;
 }
 
 const categoryColors: Record<string, string> = {
@@ -28,36 +35,50 @@ const categoryColors: Record<string, string> = {
   general: "bg-blue-900/40 text-blue-400",
 };
 
-export function EventCard({
+export function SubscriptionRow({
+  subscription,
   event,
-  canToggle,
-  isSubscribed,
-  onSubscribe,
-  onUnsubscribe,
+  onUpdate,
+  onDelete,
 }: Props) {
-  const isMetricAlert = event.name.endsWith("_metric_alert");
+  const isMetricAlert = event?.name.endsWith("_metric_alert");
 
-  const [direction, setDirection] = useState("drop");
-  const [thresholdPct, setThresholdPct] = useState(10);
-  const [windowMinutes, setWindowMinutes] = useState(1);
+  const [direction, setDirection] = useState(subscription.direction);
+  const [thresholdPct, setThresholdPct] = useState(subscription.threshold_pct);
+  const [windowMinutes, setWindowMinutes] = useState(
+    subscription.window_minutes
+  );
+
+  useEffect(() => {
+    setDirection(subscription.direction);
+    setThresholdPct(subscription.threshold_pct);
+    setWindowMinutes(subscription.window_minutes);
+  }, [subscription]);
+
+  const hasChanges =
+    direction !== subscription.direction ||
+    thresholdPct !== subscription.threshold_pct ||
+    windowMinutes !== subscription.window_minutes;
+
+  const category = event?.category ?? "general";
 
   return (
-    <div className="p-4 border border-white/10 rounded-lg bg-white/5 hover:bg-white/8 transition-colors">
+    <div className="p-4 border border-white/10 rounded-lg bg-white/5">
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <span
               className={`text-xs px-2 py-0.5 rounded uppercase ${
-                categoryColors[event.category] || categoryColors.general
+                categoryColors[category] || categoryColors.general
               }`}
             >
-              {event.category}
+              {category}
             </span>
           </div>
 
           {isMetricAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
-              <span>{event.description}</span>
+              <span>{event?.description}</span>
               <select
                 value={direction}
                 onChange={(e) => setDirection(e.target.value)}
@@ -87,38 +108,27 @@ export function EventCard({
               <span>minute(s)</span>
             </div>
           ) : (
-            <p className="text-sm text-white/70">{event.description}</p>
+            <p className="text-sm text-white/70">{event?.description}</p>
           )}
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {isMetricAlert ? (
+          {isMetricAlert && hasChanges && (
             <button
               onClick={() =>
-                onSubscribe(event.id, thresholdPct, windowMinutes, direction)
+                onUpdate(subscription.id, thresholdPct, windowMinutes, direction)
               }
-              disabled={!canToggle}
-              className="px-4 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-white/60 border border-white/20 hover:bg-brand/20 hover:text-brand hover:border-brand/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 rounded-lg text-sm font-medium bg-brand/20 text-brand border border-brand/40 hover:bg-brand/30 transition-all"
             >
-              Subscribe
-            </button>
-          ) : (
-            <button
-              onClick={() =>
-                isSubscribed
-                  ? onUnsubscribe?.(event.id)
-                  : onSubscribe(event.id)
-              }
-              disabled={!canToggle}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                isSubscribed
-                  ? "bg-brand/20 text-brand border border-brand/40 hover:bg-red-900/30 hover:text-red-400 hover:border-red-400/40"
-                  : "bg-white/10 text-white/60 border border-white/20 hover:bg-brand/20 hover:text-brand hover:border-brand/40"
-              } disabled:opacity-30 disabled:cursor-not-allowed`}
-            >
-              {isSubscribed ? "Subscribed ✓" : "Subscribe"}
+              Save
             </button>
           )}
+          <button
+            onClick={() => onDelete(subscription.id)}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-white/40 border border-white/10 hover:bg-red-900/30 hover:text-red-400 hover:border-red-400/40 transition-all"
+          >
+            ✕
+          </button>
         </div>
       </div>
     </div>

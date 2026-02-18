@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { LinkTelegram } from "./components/LinkTelegram";
 import { EventCard } from "./components/EventCard";
+import { SubscriptionRow } from "./components/SubscriptionRow";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -18,6 +19,7 @@ interface Subscription {
   event_id: number;
   threshold_pct: number;
   window_minutes: number;
+  direction: string;
 }
 
 interface Snapshot {
@@ -88,10 +90,10 @@ export default function Home() {
   const handleSubscribe = async (
     eventId: number,
     thresholdPct?: number,
-    windowMinutes?: number
+    windowMinutes?: number,
+    direction?: string
   ) => {
     if (!tgChatId) return;
-
     await fetch(`${API}/api/subscriptions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -100,12 +102,13 @@ export default function Home() {
         event_id: eventId,
         threshold_pct: thresholdPct ?? 10,
         window_minutes: windowMinutes ?? 1,
+        direction: direction ?? "drop",
       }),
     });
     loadSubs();
   };
 
-  const handleUnsubscribe = async (eventId: number) => {
+  const handleUnsubscribeDailyReport = async (eventId: number) => {
     if (!tgChatId) return;
     const sub = subs.find((s) => s.event_id === eventId);
     if (sub) {
@@ -114,8 +117,31 @@ export default function Home() {
     loadSubs();
   };
 
+  const handleUpdateSub = async (
+    subId: number,
+    thresholdPct: number,
+    windowMinutes: number,
+    direction: string
+  ) => {
+    await fetch(`${API}/api/subscriptions/${subId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        threshold_pct: thresholdPct,
+        window_minutes: windowMinutes,
+        direction,
+      }),
+    });
+    loadSubs();
+  };
+
+  const handleDeleteSub = async (subId: number) => {
+    await fetch(`${API}/api/subscriptions/${subId}`, { method: "DELETE" });
+    loadSubs();
+  };
+
   const subscribedEventIds = new Set(subs.map((s) => s.event_id));
-  const subsMap = new Map(subs.map((s) => [s.event_id, s]));
+  const eventsMap = new Map(events.map((e) => [e.id, e]));
 
   const chains = meta?.chains ?? [];
   const pollLabel = meta?.poll_interval
@@ -127,7 +153,6 @@ export default function Home() {
       ? snapshots
       : snapshots.filter((s) => s.chain === selectedChain);
 
-  // Derive which categories are visible based on filtered sources
   const visibleSources = new Set(filteredSnapshots.map((s) => s.source));
 
   const formatNumber = (v: number) => {
@@ -161,11 +186,16 @@ export default function Home() {
     return `${Math.floor(secs / 3600)}h ago`;
   };
 
-  // Group events by category, filtered by visible sources
   const filteredEvents = events.filter(
     (e) => selectedChain === "All" || visibleSources.has(e.category)
   );
   const categories = [...new Set(filteredEvents.map((e) => e.category))];
+
+  // Filter subscriptions by visible sources
+  const filteredSubs = subs.filter((s) => {
+    const ev = eventsMap.get(s.event_id);
+    return ev && (selectedChain === "All" || visibleSources.has(ev.category));
+  });
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-12">
@@ -241,7 +271,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Events grouped by category */}
+      {/* Available Alerts */}
       <h2 className="text-xl font-semibold mb-4">Available Alerts</h2>
       {categories.map((cat) => (
         <div key={cat} className="mb-6">
@@ -251,23 +281,51 @@ export default function Home() {
           <div className="space-y-3">
             {filteredEvents
               .filter((e) => e.category === cat)
-              .map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  isSubscribed={subscribedEventIds.has(event.id)}
-                  subscription={subsMap.get(event.id)}
-                  canToggle={linked}
-                  onSubscribe={handleSubscribe}
-                  onUnsubscribe={handleUnsubscribe}
-                />
-              ))}
+              .map((event) => {
+                const isDailyReport = event.name.endsWith("_daily_report");
+                return (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    canToggle={linked}
+                    isSubscribed={
+                      isDailyReport
+                        ? subscribedEventIds.has(event.id)
+                        : undefined
+                    }
+                    onSubscribe={handleSubscribe}
+                    onUnsubscribe={
+                      isDailyReport ? handleUnsubscribeDailyReport : undefined
+                    }
+                  />
+                );
+              })}
           </div>
         </div>
       ))}
 
       {events.length === 0 && (
         <p className="text-white/30 text-center py-8">Loading events...</p>
+      )}
+
+      {/* Your Subscriptions */}
+      {linked && filteredSubs.length > 0 && (
+        <>
+          <h2 className="text-xl font-semibold mb-4 mt-10">
+            Your Subscriptions
+          </h2>
+          <div className="space-y-3">
+            {filteredSubs.map((sub) => (
+              <SubscriptionRow
+                key={sub.id}
+                subscription={sub}
+                event={eventsMap.get(sub.event_id)}
+                onUpdate={handleUpdateSub}
+                onDelete={handleDeleteSub}
+              />
+            ))}
+          </div>
+        </>
       )}
     </main>
   );
