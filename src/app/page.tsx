@@ -400,7 +400,7 @@ export default function Home() {
       {categories.map((cat) => (
         <div key={cat} className="mb-6">
           <h3 className="text-sm font-medium text-white/40 uppercase mb-2">
-            {cat === "general" ? "Fear & Greed" : cat}
+            {cat}
           </h3>
           <div className="space-y-3">
             {filteredEvents
