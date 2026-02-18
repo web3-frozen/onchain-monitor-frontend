@@ -200,13 +200,16 @@ export default function Home() {
       fees_7d: "Fees (7d)",
       fees_30d: "Fees (30d)",
       fear_greed_index: "Fear & Greed",
+      opportunities: "Opportunities",
+      top_apr: "Top APR",
     };
     return labels[key] || key;
   };
 
   const formatMetric = (key: string, value: number) => {
-    if (key === "apr") return `${value.toFixed(2)}%`;
+    if (key === "apr" || key === "top_apr") return `${value.toFixed(2)}%`;
     if (key === "fear_greed_index") return `${value.toFixed(0)} / 100`;
+    if (key === "opportunities") return `${value.toFixed(0)}`;
     return formatNumber(value);
   };
 
