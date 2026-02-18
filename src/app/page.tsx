@@ -113,20 +113,32 @@ export default function Home() {
     coin?: string
   ) => {
     if (!tgChatId) return;
-    await fetch(`${API}/api/subscriptions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tg_chat_id: tgChatId,
-        event_id: eventId,
-        threshold_pct: thresholdPct ?? 10,
-        window_minutes: windowMinutes ?? 1,
-        direction: direction ?? "drop",
-        report_hour: reportHour ?? 8,
-        threshold_value: thresholdValue ?? 0,
-        coin: coin ?? "",
-      }),
-    });
+    try {
+      const res = await fetch(`${API}/api/subscriptions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tg_chat_id: tgChatId,
+          event_id: eventId,
+          threshold_pct: thresholdPct ?? 10,
+          window_minutes: windowMinutes ?? 1,
+          direction: direction ?? "drop",
+          report_hour: reportHour ?? 8,
+          threshold_value: thresholdValue ?? 0,
+          coin: coin ?? "",
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        console.error("Subscribe failed:", res.status, err);
+        alert(`Subscribe failed: ${err}`);
+        return;
+      }
+    } catch (e) {
+      console.error("Subscribe error:", e);
+      alert(`Subscribe error: ${e}`);
+      return;
+    }
     loadSubs();
   };
 
