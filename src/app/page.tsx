@@ -351,11 +351,9 @@ export default function Home() {
                   const sourceSnap = snaps.find((s) => s.source === src);
                   return (
                     <div key={src}>
-                      {snaps.length > 1 && (
-                        <div className="text-xs font-medium text-white/30 uppercase mb-2 border-b border-white/5 pb-1">
-                          {src}
-                        </div>
-                      )}
+                      <div className="text-xs font-medium text-white/30 uppercase mb-2 border-b border-white/5 pb-1">
+                        {src}
+                      </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {metrics.map(([key, value]) => (
                           <div key={key}>
