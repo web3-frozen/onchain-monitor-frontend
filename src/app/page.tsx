@@ -178,10 +178,17 @@ export default function Home() {
     return `$${v.toFixed(4)}`;
   };
 
-  const metricLabel = (key: string) => {
+  const metricLabel = (key: string, source?: string) => {
+    if (key === "price") {
+      const tokenNames: Record<string, string> = {
+        neverland: "DUST",
+        altura: "AVLT",
+      };
+      const token = source ? tokenNames[source] : undefined;
+      return token ? `${token} Price` : "Price";
+    }
     const labels: Record<string, string> = {
       tvl: "TVL",
-      price: "Price",
       apr: "APR",
       vedust_tvl: "veDUST TVL",
       fees_24h: "Fees (24h)",
@@ -267,7 +274,7 @@ export default function Home() {
             {Object.entries(snap.metrics).map(([key, value]) => (
               <div key={key}>
                 <div className="text-white/50 text-xs uppercase mb-1">
-                  {metricLabel(key)}
+                  {metricLabel(key, snap.source)}
                 </div>
                 <div className="text-lg font-semibold">
                   {formatMetric(key, value)}
