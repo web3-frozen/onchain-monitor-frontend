@@ -307,7 +307,7 @@ export default function Home() {
                             )}
                             {key === "opportunities" && (
                               <div className="text-[10px] text-white/25 mt-0.5">
-                                APR ≥ 5% · TVL ≥ $500K · LIVE
+                                APR ≥ 5% · TVL ≥ $500K · All tokens · LIVE
                               </div>
                             )}
                           </div>
