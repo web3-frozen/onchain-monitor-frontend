@@ -185,7 +185,11 @@ export default function Home() {
     return labels[key] || key;
   };
 
-  const formatMetric = (key: string, value: number) => {
+  const formatMetric = (key: string, value: number, source?: string) => {
+    // Alpha 'airdrops' and 'top_points' are plain numbers (not USD)
+    if (source === "alpha" && (key === "airdrops" || key === "top_points")) {
+      return `${value.toFixed(4)}`;
+    }
     if (key === "apr" || key === "top_apr" || key === "turtle_top_yield") return `${value.toFixed(2)}%`;
     if (key === "fear_greed_index") return `${value.toFixed(0)} / 100`;
     if (key === "opportunities" || key === "turtle_opportunities") return `${value.toFixed(0)}`;
@@ -319,7 +323,7 @@ export default function Home() {
                               {metricLabel(key, src)}
                             </div>
                             <div className="text-lg font-semibold">
-                              {formatMetric(key, value)}
+                              {formatMetric(key, value, src)}
                             </div>
                             {allDataSources[key] && (
                               <div className="text-[10px] text-white/25 mt-0.5">
