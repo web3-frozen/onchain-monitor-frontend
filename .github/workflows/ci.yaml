@@ -37,7 +37,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U test"
+          --health-cmd "pg_isready -U test -d onchain_monitor_test"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
@@ -73,7 +73,7 @@ jobs:
       - name: Start backend
         env:
           DATABASE_URL: postgres://test:test@localhost:5432/onchain_monitor_test?sslmode=disable
-          REDIS_URL: localhost:6379
+          REDIS_URL: redis://localhost:6379
           TELEGRAM_BOT_TOKEN: "0000000000:fake-token-for-integration-test"
           PORT: "8080"
           FRONTEND_ORIGIN: "*"
