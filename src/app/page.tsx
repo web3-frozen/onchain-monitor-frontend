@@ -382,6 +382,41 @@ export default function Home() {
           </div>
         </>
       )}
+      {/* Contribute & Donate */}
+      <footer className="mt-16 border-t border-white/10 pt-8 pb-4 text-center text-sm text-white/40 space-y-4">
+        <p>
+          Want to contribute? Open an issue or pull request on{" "}
+          <a
+            href="https://github.com/web3-frozen/onchain-monitor"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:underline"
+          >
+            GitHub
+          </a>
+        </p>
+        <div className="space-y-1">
+          <p className="text-white/50 font-medium">Donate</p>
+          <p>
+            EVM:{" "}
+            <code className="text-white/60 text-xs break-all">
+              0x7e1e8f5ee9edadbe4fa174ec7c15c8e5725de2c0
+            </code>
+          </p>
+          <p>
+            SOL:{" "}
+            <code className="text-white/60 text-xs break-all">
+              JAKQD8BMjY5HTM2bXihdP514o5uh8fCywTqCadAWctJz
+            </code>
+          </p>
+          <p>
+            SUI:{" "}
+            <code className="text-white/60 text-xs break-all">
+              0x81346cae241988135f6c978a1a804a131861c7e51529e7b1a697752d79035e95
+            </code>
+          </p>
+        </div>
+      </footer>
     </main>
   );
 }
