@@ -147,16 +147,6 @@ export function EventCard({
                 onChange={(e) => setThresholdValue(Number(e.target.value))}
                 className={inputCls + " w-24"}
               />
-              <span>in</span>
-              <input
-                type="number"
-                min={1}
-                max={1440}
-                value={windowMinutes}
-                onChange={(e) => setWindowMinutes(Number(e.target.value))}
-                className={inputCls}
-              />
-              <span>minute(s)</span>
             </div>
           ) : isMaxpainAlert ? (
             <>
@@ -323,7 +313,7 @@ export function EventCard({
           ) : isBinancePriceAlert ? (
             <button
               onClick={() =>
-                onSubscribe(event.id, undefined, windowMinutes, direction, undefined, thresholdValue, coin)
+                onSubscribe(event.id, undefined, undefined, direction, undefined, thresholdValue, coin)
               }
               disabled={!canToggle}
               className={btnCls}

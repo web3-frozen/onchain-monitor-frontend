@@ -172,16 +172,6 @@ export function SubscriptionRow({
                 onChange={(e) => setThresholdValue(Number(e.target.value))}
                 className={inputCls + " w-24"}
               />
-              <span>in</span>
-              <input
-                type="number"
-                min={1}
-                max={1440}
-                value={windowMinutes}
-                onChange={(e) => setWindowMinutes(Number(e.target.value))}
-                className={inputCls}
-              />
-              <span>minute(s)</span>
             </div>
           ) : isMaxpainAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
