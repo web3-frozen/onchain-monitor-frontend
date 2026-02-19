@@ -25,10 +25,33 @@ interface Props {
   onUnsubscribe?: (eventId: number) => void;
 }
 
-const categoryColors: Record<string, string> = {
-  altura: "bg-emerald-900/40 text-emerald-400",
-  neverland: "bg-purple-900/40 text-purple-400",
-  general: "bg-blue-900/40 text-blue-400",
+// Map API category (project name) → display chain name.
+// The category badge shows the chain; the source label shows the project.
+const categoryToChain: Record<string, string> = {
+  altura: "Hyperliquid",
+  neverland: "Monad",
+  general: "General",
+};
+
+const chainColors: Record<string, string> = {
+  Hyperliquid: "bg-emerald-900/40 text-emerald-400",
+  Monad: "bg-purple-900/40 text-purple-400",
+  General: "bg-blue-900/40 text-blue-400",
+};
+
+// Source labels for event cards — every event must have a visible source tag.
+// When adding a new source/event, add an entry here so users can distinguish it.
+const sourceLabels: Record<string, { label: string; color: string }> = {
+  general_metric_alert:        { label: "Fear & Greed", color: "bg-sky-900/50 text-sky-400 border-sky-500/30" },
+  general_daily_report:        { label: "Fear & Greed", color: "bg-sky-900/50 text-sky-400 border-sky-500/30" },
+  general_maxpain_alert:       { label: "MaxPain",      color: "bg-orange-900/50 text-orange-400 border-orange-500/30" },
+  general_merkl_alert:         { label: "Merkl",        color: "bg-teal-900/50 text-teal-400 border-teal-500/30" },
+  general_turtle_alert:        { label: "Turtle",       color: "bg-green-900/50 text-green-400 border-green-500/30" },
+  general_binance_price_alert: { label: "Binance",      color: "bg-yellow-900/50 text-yellow-400 border-yellow-500/30" },
+  altura_metric_alert:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
+  altura_daily_report:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
+  neverland_metric_alert:      { label: "Neverland",    color: "bg-purple-900/50 text-purple-400 border-purple-500/30" },
+  neverland_daily_report:      { label: "Neverland",    color: "bg-purple-900/50 text-purple-400 border-purple-500/30" },
 };
 
 export function EventCard({
@@ -68,11 +91,16 @@ export function EventCard({
           <div className="flex items-center gap-2 mb-1">
             <span
               className={`text-xs px-2 py-0.5 rounded uppercase ${
-                categoryColors[event.category] || categoryColors.general
+                chainColors[categoryToChain[event.category] || "General"] || chainColors.General
               }`}
             >
-              {event.category}
+              {categoryToChain[event.category] || event.category}
             </span>
+            {sourceLabels[event.name] && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded border font-semibold uppercase tracking-wider ${sourceLabels[event.name].color}`}>
+                {sourceLabels[event.name].label}
+              </span>
+            )}
             {isMaxpainAlert && (
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/50 text-amber-400 border border-amber-500/30 font-semibold uppercase tracking-wider">
                 Beta
@@ -82,7 +110,7 @@ export function EventCard({
 
           {isYieldAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
-              <span>Alert when</span>
+              <span>{isTurtleAlert ? "🐢" : "🔷"} New {isTurtleAlert ? "Turtle" : "Merkl"} yield:</span>
               <select
                 value={coin}
                 onChange={(e) => setCoin(e.target.value)}

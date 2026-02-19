@@ -118,6 +118,13 @@ export default function Home() {
     ? meta.poll_interval.replace("60s", "1 min")
     : "1 min";
 
+  // Map API category → chain name for display grouping
+  const categoryToChain: Record<string, string> = {
+    altura: "Hyperliquid",
+    neverland: "Monad",
+    general: "General",
+  };
+
   const categoryOrder = ["general", "hyperliquid", "monad", "neverland", "altura"];
   const catIdx = (c: string) => { const i = categoryOrder.indexOf(c); return i === -1 ? 99 : i; };
 
@@ -349,7 +356,7 @@ export default function Home() {
       {categories.map((cat) => (
         <div key={cat} className="mb-6">
           <h3 className="text-sm font-medium text-white/40 uppercase mb-2">
-            {cat}
+            {categoryToChain[cat] || cat}
           </h3>
           <div className="space-y-3">
             {filteredEvents
@@ -403,14 +410,23 @@ export default function Home() {
           </a>
         </p>
         <p>
-          Want to contribute? Open an issue or pull request on{" "}
+          Want to contribute? Open an issue or pull request on GitHub:{" "}
           <a
             href="https://github.com/web3-frozen/onchain-monitor"
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-400 hover:underline"
           >
-            GitHub
+            Backend
+          </a>
+          {" · "}
+          <a
+            href="https://github.com/web3-frozen/onchain-monitor-frontend"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:underline"
+          >
+            Frontend
           </a>
         </p>
         <div className="space-y-1">
