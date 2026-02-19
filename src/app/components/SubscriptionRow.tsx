@@ -35,10 +35,29 @@ interface Props {
   onDelete: (subId: number) => void;
 }
 
-const categoryColors: Record<string, string> = {
-  altura: "bg-emerald-900/40 text-emerald-400",
-  neverland: "bg-purple-900/40 text-purple-400",
-  general: "bg-blue-900/40 text-blue-400",
+const categoryToChain: Record<string, string> = {
+  altura: "Hyperliquid",
+  neverland: "Monad",
+  general: "General",
+};
+
+const chainColors: Record<string, string> = {
+  Hyperliquid: "bg-emerald-900/40 text-emerald-400",
+  Monad: "bg-purple-900/40 text-purple-400",
+  General: "bg-blue-900/40 text-blue-400",
+};
+
+const sourceLabels: Record<string, { label: string; color: string }> = {
+  general_metric_alert:        { label: "Fear & Greed", color: "bg-sky-900/50 text-sky-400 border-sky-500/30" },
+  general_daily_report:        { label: "Fear & Greed", color: "bg-sky-900/50 text-sky-400 border-sky-500/30" },
+  general_maxpain_alert:       { label: "MaxPain",      color: "bg-orange-900/50 text-orange-400 border-orange-500/30" },
+  general_merkl_alert:         { label: "Merkl",        color: "bg-teal-900/50 text-teal-400 border-teal-500/30" },
+  general_turtle_alert:        { label: "Turtle",       color: "bg-green-900/50 text-green-400 border-green-500/30" },
+  general_binance_price_alert: { label: "Binance",      color: "bg-yellow-900/50 text-yellow-400 border-yellow-500/30" },
+  altura_metric_alert:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
+  altura_daily_report:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
+  neverland_metric_alert:      { label: "Neverland",    color: "bg-purple-900/50 text-purple-400 border-purple-500/30" },
+  neverland_daily_report:      { label: "Neverland",    color: "bg-purple-900/50 text-purple-400 border-purple-500/30" },
 };
 
 export function SubscriptionRow({
@@ -51,6 +70,7 @@ export function SubscriptionRow({
   const isDailyReport = event?.name.endsWith("_daily_report");
   const isMaxpainAlert = event?.name === "general_maxpain_alert";
   const isMerklAlert = event?.name === "general_merkl_alert";
+  const isTurtleAlert = event?.name === "general_turtle_alert";
   const isBinancePriceAlert = event?.name === "general_binance_price_alert";
   const isValueAlert = isMetricAlert && (subscription.direction === "higher" || subscription.direction === "lower");
 
@@ -96,16 +116,21 @@ export function SubscriptionRow({
           <div className="flex items-center gap-2 mb-1">
             <span
               className={`text-xs px-2 py-0.5 rounded uppercase ${
-                categoryColors[category] || categoryColors.general
+                chainColors[categoryToChain[category] || "General"] || chainColors.General
               }`}
             >
-              {category}
+              {categoryToChain[category] || category}
             </span>
+            {event?.name && sourceLabels[event.name] && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded border font-semibold uppercase tracking-wider ${sourceLabels[event.name].color}`}>
+                {sourceLabels[event.name].label}
+              </span>
+            )}
           </div>
 
           {isMerklAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
-              <span>Alert when</span>
+              <span>🔷 Merkl:</span>
               <select
                 value={coin}
                 onChange={(e) => setCoin(e.target.value)}
@@ -144,6 +169,52 @@ export function SubscriptionRow({
                 <option value="non-stablecoin">Non-stablecoin</option>
                 <option value="any">Any token</option>
               </select>
+            </div>
+          ) : isTurtleAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>🐢 Turtle:</span>
+              <select
+                value={direction}
+                onChange={(e) => setDirection(e.target.value)}
+                className={selectCls}
+              >
+                <option value="stable">Stable</option>
+                <option value="btc">BTC</option>
+                <option value="eth">ETH</option>
+                <option value="all">All tokens</option>
+              </select>
+              <select
+                value={coin}
+                onChange={(e) => setCoin(e.target.value)}
+                className={selectCls}
+              >
+                <option value="ALL">All categories</option>
+                <option value="lending">Lending</option>
+                <option value="predeposit-vault">Predeposit Vault</option>
+                <option value="yield-aggregator">Yield Aggregator</option>
+                <option value="liquid-staking">Liquid Staking</option>
+                <option value="dex-liquidity-stable">DEX Liquidity</option>
+              </select>
+              <span>Yield &ge;</span>
+              <input
+                type="number"
+                min={1}
+                max={500}
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>% TVL &ge;</span>
+              <input
+                type="number"
+                min={0.1}
+                max={100}
+                step={0.1}
+                value={thresholdPct}
+                onChange={(e) => setThresholdPct(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>M</span>
             </div>
           ) : isBinancePriceAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
@@ -291,7 +362,7 @@ export function SubscriptionRow({
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {(isMetricAlert || isDailyReport || isMaxpainAlert || isMerklAlert || isBinancePriceAlert) && hasChanges && (
+          {(isMetricAlert || isDailyReport || isMaxpainAlert || isMerklAlert || isTurtleAlert || isBinancePriceAlert) && hasChanges && (
             <button
               onClick={() =>
                 onUpdate(subscription.id, thresholdPct, windowMinutes, direction, reportHour, thresholdValue, coin)

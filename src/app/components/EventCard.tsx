@@ -67,15 +67,19 @@ export function EventCard({
   const isMerklAlert = event.name === "general_merkl_alert";
   const isTurtleAlert = event.name === "general_turtle_alert";
   const isBinancePriceAlert = event.name === "general_binance_price_alert";
-  const isYieldAlert = isMerklAlert || isTurtleAlert;
   const isGeneralMetric = isMetricAlert && event.category === "general";
   const [alertMode, setAlertMode] = useState<"pct" | "value">(isGeneralMetric ? "value" : "pct");
-  const [direction, setDirection] = useState(isBinancePriceAlert ? "increase" : isYieldAlert ? "any" : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop");
-  const [thresholdPct, setThresholdPct] = useState(isYieldAlert ? 1 : 10);
+  // Merkl: direction = stablecoin filter; Turtle: direction = deposit token filter
+  const [direction, setDirection] = useState(
+    isBinancePriceAlert ? "increase" : isMerklAlert ? "any" : isTurtleAlert ? "all"
+    : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop"
+  );
+  const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : isTurtleAlert ? 1 : 10);
   const [windowMinutes, setWindowMinutes] = useState(isMaxpainAlert ? 1440 : 1);
   const [reportHour, setReportHour] = useState(8);
-  const [thresholdValue, setThresholdValue] = useState(isBinancePriceAlert ? 100000 : isYieldAlert ? 10 : isMaxpainAlert ? 1 : 50);
-  const [coin, setCoin] = useState(isYieldAlert ? "ALL" : "BTC");
+  const [thresholdValue, setThresholdValue] = useState(isBinancePriceAlert ? 100000 : isMerklAlert ? 10 : isTurtleAlert ? 5 : isMaxpainAlert ? 1 : 50);
+  // Merkl: coin = action (LEND/BORROW/HOLD); Turtle: coin = category tag
+  const [coin, setCoin] = useState(isMerklAlert ? "ALL" : isTurtleAlert ? "ALL" : "BTC");
 
   const inputCls =
     "w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none";
@@ -108,9 +112,9 @@ export function EventCard({
             )}
           </div>
 
-          {isYieldAlert ? (
+          {isMerklAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
-              <span>{isTurtleAlert ? "🐢" : "🔷"} New {isTurtleAlert ? "Turtle" : "Merkl"} yield:</span>
+              <span>🔷 Merkl yield:</span>
               <select
                 value={coin}
                 onChange={(e) => setCoin(e.target.value)}
@@ -149,6 +153,52 @@ export function EventCard({
                 <option value="non-stablecoin">Non-stablecoin</option>
                 <option value="any">Any token</option>
               </select>
+            </div>
+          ) : isTurtleAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>🐢 Turtle yield:</span>
+              <select
+                value={direction}
+                onChange={(e) => setDirection(e.target.value)}
+                className={selectCls}
+              >
+                <option value="stable">Stable</option>
+                <option value="btc">BTC</option>
+                <option value="eth">ETH</option>
+                <option value="all">All tokens</option>
+              </select>
+              <select
+                value={coin}
+                onChange={(e) => setCoin(e.target.value)}
+                className={selectCls}
+              >
+                <option value="ALL">All categories</option>
+                <option value="lending">Lending</option>
+                <option value="predeposit-vault">Predeposit Vault</option>
+                <option value="yield-aggregator">Yield Aggregator</option>
+                <option value="liquid-staking">Liquid Staking</option>
+                <option value="dex-liquidity-stable">DEX Liquidity</option>
+              </select>
+              <span>Yield &ge;</span>
+              <input
+                type="number"
+                min={1}
+                max={500}
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>% TVL &ge;</span>
+              <input
+                type="number"
+                min={0.1}
+                max={100}
+                step={0.1}
+                value={thresholdPct}
+                onChange={(e) => setThresholdPct(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>M</span>
             </div>
           ) : isBinancePriceAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
@@ -330,7 +380,17 @@ export function EventCard({
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {isYieldAlert ? (
+          {isMerklAlert ? (
+            <button
+              onClick={() =>
+                onSubscribe(event.id, thresholdPct, undefined, direction, undefined, thresholdValue, coin)
+              }
+              disabled={!canToggle}
+              className={btnCls}
+            >
+              Subscribe
+            </button>
+          ) : isTurtleAlert ? (
             <button
               onClick={() =>
                 onSubscribe(event.id, thresholdPct, undefined, direction, undefined, thresholdValue, coin)
