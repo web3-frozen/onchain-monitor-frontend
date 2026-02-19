@@ -305,6 +305,11 @@ export default function Home() {
                                 via {allDataSources[key]}
                               </div>
                             )}
+                            {key === "opportunities" && (
+                              <div className="text-[10px] text-white/25 mt-0.5">
+                                APR ≥ 5% · TVL ≥ $500K · LIVE
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
