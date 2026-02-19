@@ -42,13 +42,14 @@ export function EventCard({
   const isDailyReport = event.name.endsWith("_daily_report");
   const isMaxpainAlert = event.name === "general_maxpain_alert";
   const isMerklAlert = event.name === "general_merkl_alert";
+  const isBinancePriceAlert = event.name === "general_binance_price_alert";
   const isGeneralMetric = isMetricAlert && event.category === "general";
   const [alertMode, setAlertMode] = useState<"pct" | "value">(isGeneralMetric ? "value" : "pct");
-  const [direction, setDirection] = useState(isMerklAlert ? "any" : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop");
+  const [direction, setDirection] = useState(isBinancePriceAlert ? "increase" : isMerklAlert ? "any" : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop");
   const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : 10);
   const [windowMinutes, setWindowMinutes] = useState(isMaxpainAlert ? 1440 : 1);
   const [reportHour, setReportHour] = useState(8);
-  const [thresholdValue, setThresholdValue] = useState(isMerklAlert ? 10 : isMaxpainAlert ? 1 : 50);
+  const [thresholdValue, setThresholdValue] = useState(isBinancePriceAlert ? 100000 : isMerklAlert ? 10 : isMaxpainAlert ? 1 : 50);
   const [coin, setCoin] = useState(isMerklAlert ? "ALL" : "BTC");
 
   const inputCls =
@@ -118,6 +119,44 @@ export function EventCard({
                 <option value="non-stablecoin">Non-stablecoin</option>
                 <option value="any">Any token</option>
               </select>
+            </div>
+          ) : isBinancePriceAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>Alert when</span>
+              <input
+                type="text"
+                value={coin}
+                onChange={(e) => setCoin(e.target.value.toUpperCase())}
+                placeholder="BTC"
+                className={inputCls + " w-16"}
+              />
+              <span>/USDT</span>
+              <select
+                value={direction}
+                onChange={(e) => setDirection(e.target.value)}
+                className={selectCls}
+              >
+                <option value="increase">increase to</option>
+                <option value="decrease">decrease to</option>
+              </select>
+              <input
+                type="number"
+                min={0}
+                step="any"
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls + " w-24"}
+              />
+              <span>in</span>
+              <input
+                type="number"
+                min={1}
+                max={1440}
+                value={windowMinutes}
+                onChange={(e) => setWindowMinutes(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>minute(s)</span>
             </div>
           ) : isMaxpainAlert ? (
             <>
@@ -275,6 +314,16 @@ export function EventCard({
             <button
               onClick={() =>
                 onSubscribe(event.id, thresholdPct, undefined, direction, undefined, thresholdValue, coin)
+              }
+              disabled={!canToggle}
+              className={btnCls}
+            >
+              Subscribe
+            </button>
+          ) : isBinancePriceAlert ? (
+            <button
+              onClick={() =>
+                onSubscribe(event.id, undefined, windowMinutes, direction, undefined, thresholdValue, coin)
               }
               disabled={!canToggle}
               className={btnCls}

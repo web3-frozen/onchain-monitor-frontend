@@ -51,6 +51,7 @@ export function SubscriptionRow({
   const isDailyReport = event?.name.endsWith("_daily_report");
   const isMaxpainAlert = event?.name === "general_maxpain_alert";
   const isMerklAlert = event?.name === "general_merkl_alert";
+  const isBinancePriceAlert = event?.name === "general_binance_price_alert";
   const isValueAlert = isMetricAlert && (subscription.direction === "higher" || subscription.direction === "lower");
 
   const [direction, setDirection] = useState(subscription.direction);
@@ -143,6 +144,44 @@ export function SubscriptionRow({
                 <option value="non-stablecoin">Non-stablecoin</option>
                 <option value="any">Any token</option>
               </select>
+            </div>
+          ) : isBinancePriceAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>Alert when</span>
+              <input
+                type="text"
+                value={coin}
+                onChange={(e) => setCoin(e.target.value.toUpperCase())}
+                placeholder="BTC"
+                className={inputCls + " w-16"}
+              />
+              <span>/USDT</span>
+              <select
+                value={direction}
+                onChange={(e) => setDirection(e.target.value)}
+                className={selectCls}
+              >
+                <option value="increase">increase to</option>
+                <option value="decrease">decrease to</option>
+              </select>
+              <input
+                type="number"
+                min={0}
+                step="any"
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls + " w-24"}
+              />
+              <span>in</span>
+              <input
+                type="number"
+                min={1}
+                max={1440}
+                value={windowMinutes}
+                onChange={(e) => setWindowMinutes(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>minute(s)</span>
             </div>
           ) : isMaxpainAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
@@ -262,7 +301,7 @@ export function SubscriptionRow({
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {(isMetricAlert || isDailyReport || isMaxpainAlert || isMerklAlert) && hasChanges && (
+          {(isMetricAlert || isDailyReport || isMaxpainAlert || isMerklAlert || isBinancePriceAlert) && hasChanges && (
             <button
               onClick={() =>
                 onUpdate(subscription.id, thresholdPct, windowMinutes, direction, reportHour, thresholdValue, coin)
