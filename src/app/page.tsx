@@ -385,6 +385,17 @@ export default function Home() {
       {/* Contribute & Donate */}
       <footer className="mt-16 border-t border-white/10 pt-8 pb-4 text-center text-sm text-white/40 space-y-4">
         <p>
+          Built by{" "}
+          <a
+            href="https://x.com/dummysui"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:underline"
+          >
+            @dummysui
+          </a>
+        </p>
+        <p>
           Want to contribute? Open an issue or pull request on{" "}
           <a
             href="https://github.com/web3-frozen/onchain-monitor"
