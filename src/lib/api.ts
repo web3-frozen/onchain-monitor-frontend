@@ -68,6 +68,11 @@ export const api = {
     await request(`/api/subscriptions/${id}`, { method: "DELETE" });
   },
 
+  async checkLinkStatus(tgChatId: number): Promise<boolean> {
+    const res = await request<{ linked: boolean }>(`/api/link/status?tg_chat_id=${tgChatId}`);
+    return res.linked;
+  },
+
   async linkTelegram(code: string): Promise<{ tg_chat_id: number }> {
     return request("/api/link", {
       method: "POST",

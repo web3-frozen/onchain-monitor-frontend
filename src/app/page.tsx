@@ -19,8 +19,20 @@ export default function Home() {
   useEffect(() => {
     const saved = localStorage.getItem("tg_chat_id");
     if (saved) {
-      setTgChatId(Number(saved));
-      setLinked(true);
+      const chatId = Number(saved);
+      setTgChatId(chatId);
+      // Verify linked status from backend — localStorage may be stale
+      api.checkLinkStatus(chatId).then((isLinked) => {
+        setLinked(isLinked);
+        if (!isLinked) {
+          localStorage.removeItem("tg_chat_id");
+          setTgChatId(null);
+        }
+      }).catch(() => {
+        setLinked(false);
+        localStorage.removeItem("tg_chat_id");
+        setTgChatId(null);
+      });
     }
   }, []);
 
