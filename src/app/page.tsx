@@ -115,7 +115,7 @@ export default function Home() {
     (a, b) => (chainOrder.indexOf(a) === -1 ? 99 : chainOrder.indexOf(a)) - (chainOrder.indexOf(b) === -1 ? 99 : chainOrder.indexOf(b))
   );
   const pollLabel = meta?.poll_interval
-    ? meta.poll_interval.replace("s", "s").replace("60s", "1 min")
+    ? meta.poll_interval.replace("60s", "1 min")
     : "1 min";
 
   const categoryOrder = ["general", "hyperliquid", "monad", "neverland", "altura"];
