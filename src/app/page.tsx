@@ -154,6 +154,7 @@ export default function Home() {
       fear_greed_index: "Fear & Greed",
       opportunities: "Opportunities",
       top_apr: "Top APR",
+      top_yield: "Top Yield",
       BTC_price: "BTC Price",
       BTC_long_maxpain: "BTC Long Max Pain (24h)",
       BTC_short_maxpain: "BTC Short Max Pain (24h)",
@@ -165,7 +166,7 @@ export default function Home() {
   };
 
   const formatMetric = (key: string, value: number) => {
-    if (key === "apr" || key === "top_apr") return `${value.toFixed(2)}%`;
+    if (key === "apr" || key === "top_apr" || key === "top_yield") return `${value.toFixed(2)}%`;
     if (key === "fear_greed_index") return `${value.toFixed(0)} / 100`;
     if (key === "opportunities") return `${value.toFixed(0)}`;
     if (key.includes("maxpain") && value === 0) return "N/A";
@@ -260,7 +261,7 @@ export default function Home() {
             }
           }
           // Group metrics by source for rendering sections
-          const sourceOrder = ["general", "maxpain", "merkl", "altura", "neverland"];
+          const sourceOrder = ["general", "maxpain", "merkl", "turtle", "altura", "neverland"];
           const metricsBySource = new Map<string, [string, number][]>();
           for (const [k, v] of Object.entries(allMetrics)) {
             const src = allSourceLabels[k] || "unknown";
@@ -305,9 +306,11 @@ export default function Home() {
                                 via {allDataSources[key]}
                               </div>
                             )}
-                            {key === "opportunities" && (
+                            {key === "opportunities" && allDataSources[key] && (
                               <div className="text-[10px] text-white/25 mt-0.5">
-                                APR ≥ 5% · TVL ≥ $500K · All tokens · LIVE
+                                {allDataSources[key] === "Merkl"
+                                  ? "APR ≥ 5% · TVL ≥ $500K · All tokens · LIVE"
+                                  : "Yield ≥ 5% · TVL ≥ $500K · Active"}
                               </div>
                             )}
                           </div>
