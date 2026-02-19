@@ -189,6 +189,8 @@ export default function Home() {
     if (key === "apr" || key === "top_apr" || key === "turtle_top_yield") return `${value.toFixed(2)}%`;
     if (key === "fear_greed_index") return `${value.toFixed(0)} / 100`;
     if (key === "opportunities" || key === "turtle_opportunities") return `${value.toFixed(0)}`;
+    // Alpha metrics (airdrops, top_points) are raw numbers, not USD amounts — do not prefix with $
+    if (key === "airdrops" || key === "top_points") return `${value.toFixed(4)}`;
     if (key.includes("maxpain") && value === 0) return "N/A";
     return formatNumber(value);
   };
