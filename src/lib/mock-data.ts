@@ -17,7 +17,7 @@ export const mockEvents: Event[] = [
   { id: 58, name: "general_merkl_alert", description: "Alert on new Merkl yield opportunities", category: "general" },
   { id: 611, name: "general_binance_price_alert", description: "Alert when Binance price reaches target", category: "general" },
   { id: 756, name: "general_turtle_alert", description: "Alert on new Turtle yield opportunities", category: "general" },
-  { id: 900, name: "general_alpha_airdrop", description: "Alert on Alpha airdrops", category: "general" },
+  { id: 900, name: "general_alpha_alert", description: "Alert on Alpha airdrops", category: "general" },
 ];
 
 export const mockStats: Snapshot[] = [
