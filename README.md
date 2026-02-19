@@ -8,6 +8,7 @@ A Next.js dashboard for monitoring on-chain DeFi metrics and managing Telegram a
 - **Chain-based grouping** — snapshots grouped by chain (General, HyperEVM, etc.) with source subtitles
 - **Configurable alerts** — subscribe with custom thresholds, directions (increase/drop), and time windows
 - **Merkl yield discovery** — filter by APR, TVL, action (LEND/HOLD/BORROW), stablecoin preference
+- **Binance price alerts** — subscribe to price increase/decrease targets for any coin (default BTC/USDT)
 - **Telegram linking** — link your Telegram account with a 6-character OTP via `@crypto_stat_monitoring_bot`
 - **Responsive UI** — dark theme, Tailwind CSS
 
@@ -33,24 +34,29 @@ Each source shows a subtitle for attribution. Max Pain values display "N/A" when
 | **Metric alert** | Metric, % change, direction (increase/drop), time window (minutes) |
 | **Max Pain alert** | Coin (BTC/ETH), position (LONG/SHORT), % proximity |
 | **Merkl alert** | Min APR, min TVL, action (LEND/HOLD/BORROW/LEND,HOLD), stablecoin filter |
+| **Binance price alert** | Coin symbol (BTC/ETH/...), direction (increase/decrease), target price |
 | **Daily report** | Report time (UTC+8) |
 
 ## Project Structure
 
 ```
-src/app/
-  page.tsx                  # Main dashboard — chain-based snapshot grouping
-  layout.tsx                # Root layout
-  globals.css               # Global styles + Tailwind imports
-  components/
-    EventCard.tsx            # Event subscription card with configurable inputs
-    LinkTelegram.tsx         # Telegram OTP linking form
-    SubscriptionRow.tsx      # Active subscription display with edit/delete
+src/
+  app/
+    page.tsx                  # Main dashboard — chain-based snapshot grouping
+    layout.tsx                # Root layout
+    globals.css               # Global styles + Tailwind imports
+    components/
+      EventCard.tsx            # Event subscription card with configurable inputs
+      LinkTelegram.tsx         # Telegram OTP linking form
+      SubscriptionRow.tsx      # Active subscription display with edit/delete
+  lib/
+    api.ts                    # Typed API client (centralized fetch logic)
+    types.ts                  # Shared TypeScript interfaces
 ```
 
 ## API Integration
 
-The frontend talks to the backend API at the same domain under `/api/`:
+All API calls go through a centralized typed client (`src/lib/api.ts`) that handles error responses and JSON parsing. Components import the `api` object and shared types from `src/lib/types.ts`.
 
 | Endpoint | Usage |
 |----------|-------|

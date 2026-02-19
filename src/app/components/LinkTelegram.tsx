@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "";
+import { api } from "../../lib/api";
 
 interface Props {
   onLinked: (chatId: number) => void;
@@ -19,22 +18,10 @@ export function LinkTelegram({ onLinked }: Props) {
     setLoading(true);
 
     try {
-      const resp = await fetch(`${API}/api/link`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: code.toUpperCase().trim() }),
-      });
-
-      if (!resp.ok) {
-        const data = await resp.json();
-        setError(data.error || "Invalid or expired link code");
-        return;
-      }
-
-      const user = await resp.json();
+      const user = await api.linkTelegram(code.toUpperCase().trim());
       onLinked(user.tg_chat_id);
     } catch {
-      setError("Failed to connect. Please try again.");
+      setError("Invalid or expired link code. Please try again.");
     } finally {
       setLoading(false);
     }

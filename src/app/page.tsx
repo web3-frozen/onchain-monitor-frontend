@@ -4,39 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { LinkTelegram } from "./components/LinkTelegram";
 import { EventCard } from "./components/EventCard";
 import { SubscriptionRow } from "./components/SubscriptionRow";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "";
-
-interface Event {
-  id: number;
-  name: string;
-  description: string;
-  category: string;
-}
-
-interface Subscription {
-  id: number;
-  event_id: number;
-  threshold_pct: number;
-  window_minutes: number;
-  direction: string;
-  report_hour: number;
-  threshold_value: number;
-  coin: string;
-}
-
-interface Snapshot {
-  source: string;
-  chain: string;
-  metrics: Record<string, number>;
-  data_sources: Record<string, string>;
-  fetched_at: string;
-}
-
-interface StatsMeta {
-  chains: string[];
-  poll_interval: string;
-}
+import { api } from "../lib/api";
+import type { Event, Subscription, Snapshot, StatsMeta } from "../lib/types";
 
 export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -56,28 +25,14 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    fetch(`${API}/api/events`)
-      .then((r) => r.json())
-      .then(setEvents)
-      .catch(console.error);
-
-    fetch(`${API}/api/stats`)
-      .then((r) => r.json())
-      .then((data) => setSnapshots(Array.isArray(data) ? data : [data]))
-      .catch(console.error);
-
-    fetch(`${API}/api/stats/meta`)
-      .then((r) => r.json())
-      .then(setMeta)
-      .catch(console.error);
+    api.listEvents().then(setEvents).catch(console.error);
+    api.listSnapshots().then(setSnapshots).catch(console.error);
+    api.getStatsMeta().then(setMeta).catch(console.error);
   }, []);
 
   const loadSubs = useCallback(() => {
     if (!tgChatId) return;
-    fetch(`${API}/api/subscriptions?tg_chat_id=${tgChatId}`)
-      .then((r) => r.json())
-      .then(setSubs)
-      .catch(console.error);
+    api.listSubscriptions(tgChatId).then(setSubs).catch(console.error);
   }, [tgChatId]);
 
   useEffect(() => {
@@ -92,11 +47,7 @@ export default function Home() {
 
   const handleUnlink = async () => {
     if (!tgChatId) return;
-    await fetch(`${API}/api/unlink`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tg_chat_id: tgChatId }),
-    });
+    await api.unlinkTelegram(tgChatId);
     setTgChatId(null);
     setLinked(false);
     setSubs([]);
@@ -114,29 +65,19 @@ export default function Home() {
   ) => {
     if (!tgChatId) return;
     try {
-      const res = await fetch(`${API}/api/subscriptions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tg_chat_id: tgChatId,
-          event_id: eventId,
-          threshold_pct: thresholdPct ?? 10,
-          window_minutes: windowMinutes ?? 1,
-          direction: direction ?? "drop",
-          report_hour: reportHour ?? 8,
-          threshold_value: thresholdValue ?? 0,
-          coin: coin ?? "",
-        }),
+      await api.subscribe({
+        tg_chat_id: tgChatId,
+        event_id: eventId,
+        threshold_pct: thresholdPct ?? 10,
+        window_minutes: windowMinutes ?? 1,
+        direction: direction ?? "drop",
+        report_hour: reportHour ?? 8,
+        threshold_value: thresholdValue ?? 0,
+        coin: coin ?? "",
       });
-      if (!res.ok) {
-        const err = await res.text();
-        console.error("Subscribe failed:", res.status, err);
-        alert(`Subscribe failed: ${err}`);
-        return;
-      }
     } catch (e) {
       console.error("Subscribe error:", e);
-      alert(`Subscribe error: ${e}`);
+      alert(`Subscribe failed: ${e}`);
       return;
     }
     loadSubs();
@@ -151,23 +92,19 @@ export default function Home() {
     thresholdValue: number,
     coin: string
   ) => {
-    await fetch(`${API}/api/subscriptions/${subId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        threshold_pct: thresholdPct,
-        window_minutes: windowMinutes,
-        direction,
-        report_hour: reportHour,
-        threshold_value: thresholdValue,
-        coin,
-      }),
+    await api.updateSubscription(subId, {
+      threshold_pct: thresholdPct,
+      window_minutes: windowMinutes,
+      direction,
+      report_hour: reportHour,
+      threshold_value: thresholdValue,
+      coin,
     });
     loadSubs();
   };
 
   const handleDeleteSub = async (subId: number) => {
-    await fetch(`${API}/api/subscriptions/${subId}`, { method: "DELETE" });
+    await api.deleteSubscription(subId);
     loadSubs();
   };
 
