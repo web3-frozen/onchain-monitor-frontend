@@ -42,15 +42,17 @@ export function EventCard({
   const isDailyReport = event.name.endsWith("_daily_report");
   const isMaxpainAlert = event.name === "general_maxpain_alert";
   const isMerklAlert = event.name === "general_merkl_alert";
+  const isTurtleAlert = event.name === "general_turtle_alert";
   const isBinancePriceAlert = event.name === "general_binance_price_alert";
+  const isYieldAlert = isMerklAlert || isTurtleAlert;
   const isGeneralMetric = isMetricAlert && event.category === "general";
   const [alertMode, setAlertMode] = useState<"pct" | "value">(isGeneralMetric ? "value" : "pct");
-  const [direction, setDirection] = useState(isBinancePriceAlert ? "increase" : isMerklAlert ? "any" : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop");
-  const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : 10);
+  const [direction, setDirection] = useState(isBinancePriceAlert ? "increase" : isYieldAlert ? "any" : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop");
+  const [thresholdPct, setThresholdPct] = useState(isYieldAlert ? 1 : 10);
   const [windowMinutes, setWindowMinutes] = useState(isMaxpainAlert ? 1440 : 1);
   const [reportHour, setReportHour] = useState(8);
-  const [thresholdValue, setThresholdValue] = useState(isBinancePriceAlert ? 100000 : isMerklAlert ? 10 : isMaxpainAlert ? 1 : 50);
-  const [coin, setCoin] = useState(isMerklAlert ? "ALL" : "BTC");
+  const [thresholdValue, setThresholdValue] = useState(isBinancePriceAlert ? 100000 : isYieldAlert ? 10 : isMaxpainAlert ? 1 : 50);
+  const [coin, setCoin] = useState(isYieldAlert ? "ALL" : "BTC");
 
   const inputCls =
     "w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none";
@@ -78,7 +80,7 @@ export function EventCard({
             )}
           </div>
 
-          {isMerklAlert ? (
+          {isYieldAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
               <span>Alert when</span>
               <select
@@ -300,7 +302,7 @@ export function EventCard({
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {isMerklAlert ? (
+          {isYieldAlert ? (
             <button
               onClick={() =>
                 onSubscribe(event.id, thresholdPct, undefined, direction, undefined, thresholdValue, coin)
