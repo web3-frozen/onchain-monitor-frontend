@@ -105,4 +105,4 @@ Live at: **https://monitoring.dummysui.monster**
 
 ## License
 
-Private repository — all rights reserved.
+This project is licensed under the [MIT License](LICENSE).
