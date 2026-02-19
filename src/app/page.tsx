@@ -154,7 +154,8 @@ export default function Home() {
       fear_greed_index: "Fear & Greed",
       opportunities: "Opportunities",
       top_apr: "Top APR",
-      top_yield: "Top Yield",
+      turtle_opportunities: "Opportunities",
+      turtle_top_yield: "Top Yield",
       BTC_price: "BTC Price",
       BTC_long_maxpain: "BTC Long Max Pain (24h)",
       BTC_short_maxpain: "BTC Short Max Pain (24h)",
@@ -166,9 +167,9 @@ export default function Home() {
   };
 
   const formatMetric = (key: string, value: number) => {
-    if (key === "apr" || key === "top_apr" || key === "top_yield") return `${value.toFixed(2)}%`;
+    if (key === "apr" || key === "top_apr" || key === "turtle_top_yield") return `${value.toFixed(2)}%`;
     if (key === "fear_greed_index") return `${value.toFixed(0)} / 100`;
-    if (key === "opportunities") return `${value.toFixed(0)}`;
+    if (key === "opportunities" || key === "turtle_opportunities") return `${value.toFixed(0)}`;
     if (key.includes("maxpain") && value === 0) return "N/A";
     return formatNumber(value);
   };
@@ -308,9 +309,12 @@ export default function Home() {
                             )}
                             {key === "opportunities" && allDataSources[key] && (
                               <div className="text-[10px] text-white/25 mt-0.5">
-                                {allDataSources[key] === "Merkl"
-                                  ? "APR ≥ 5% · TVL ≥ $500K · All tokens · LIVE"
-                                  : "Yield ≥ 5% · TVL ≥ $500K · Active"}
+                                APR ≥ 5% · TVL ≥ $500K · All tokens · LIVE
+                              </div>
+                            )}
+                            {key === "turtle_opportunities" && (
+                              <div className="text-[10px] text-white/25 mt-0.5">
+                                Yield ≥ 5% · TVL ≥ $500K · Active
                               </div>
                             )}
                           </div>
