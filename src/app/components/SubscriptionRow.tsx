@@ -282,7 +282,7 @@ export function SubscriptionRow({
                 onChange={(e) => setThresholdValue(Number(e.target.value))}
                 className={inputCls}
               />
-              <span>% TVL ≥</span>
+              <span>TVL ≥</span>
               <input
                 type="number"
                 min={0.1}
