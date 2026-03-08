@@ -18,6 +18,7 @@ export const mockEvents: Event[] = [
   { id: 611, name: "general_binance_price_alert", description: "Alert when Binance price reaches target", category: "general" },
   { id: 756, name: "general_turtle_alert", description: "Alert on new Turtle yield opportunities", category: "general" },
   { id: 900, name: "general_alpha_alert", description: "Alert on Binance Alpha airdrops", category: "general" },
+  { id: 901, name: "general_defillama_alert", description: "Alert on stablecoin yield opportunities from DeFi Llama", category: "general" },
 ];
 
 export const mockStats: Snapshot[] = [
@@ -68,6 +69,13 @@ export const mockStats: Snapshot[] = [
     chain: "General",
     metrics: { btc_price: 96500 },
     data_sources: { btc_price: "Binance" },
+    fetched_at: new Date().toISOString(),
+  },
+  {
+    source: "defillama",
+    chain: "General",
+    metrics: { usdc_max_apy: 12.5, usdt_max_apy: 11.8, usdc_pools: 42, usdt_pools: 38, total_pools: 80, all_stable_max_apy: 14.2, all_stable_pools: 120 },
+    data_sources: { usdc_max_apy: "DefiLlama", usdt_max_apy: "DefiLlama", usdc_pools: "DefiLlama", usdt_pools: "DefiLlama", total_pools: "DefiLlama", all_stable_max_apy: "DefiLlama", all_stable_pools: "DefiLlama" },
     fetched_at: new Date().toISOString(),
   },
 ];

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface Subscription {
   id: number;
@@ -55,6 +55,7 @@ const sourceLabels: Record<string, { label: string; color: string }> = {
   general_turtle_alert:        { label: "Turtle",       color: "bg-green-900/50 text-green-400 border-green-500/30" },
   general_binance_price_alert: { label: "Binance",      color: "bg-yellow-900/50 text-yellow-400 border-yellow-500/30" },
   general_alpha_alert:         { label: "Alpha",        color: "bg-pink-900/50 text-pink-400 border-pink-500/30" },
+  general_defillama_alert:     { label: "DeFi Llama",   color: "bg-indigo-900/50 text-indigo-400 border-indigo-500/30" },
   altura_metric_alert:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
   altura_daily_report:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
   neverland_metric_alert:      { label: "Neverland",    color: "bg-purple-900/50 text-purple-400 border-purple-500/30" },
@@ -73,6 +74,7 @@ export function SubscriptionRow({
   const isMerklAlert = event?.name === "general_merkl_alert";
   const isTurtleAlert = event?.name === "general_turtle_alert";
   const isBinancePriceAlert = event?.name === "general_binance_price_alert";
+  const isDefiLlamaAlert = event?.name === "general_defillama_alert";
   const isValueAlert = isMetricAlert && (subscription.direction === "higher" || subscription.direction === "lower");
 
   const [direction, setDirection] = useState(subscription.direction);
@@ -84,7 +86,19 @@ export function SubscriptionRow({
   const [thresholdValue, setThresholdValue] = useState(
     subscription.threshold_value ?? 50
   );
-  const [coin, setCoin] = useState(subscription.coin ?? "BTC");
+  // Normalize coin based on alert type - preserve proper defaults
+  const normalizeCoin = useCallback((c: string | undefined | null) => {
+    if (c) return c; // If coin has a value, use it
+    // Default for each alert type when coin is empty/null
+    if (isDefiLlamaAlert) return "USDC_USDT";
+    if (isMerklAlert) return "ALL";
+    if (isTurtleAlert) return "ALL";
+    if (isBinancePriceAlert) return "BTC";
+    return c ?? ""; // For other alerts, keep empty
+  }, [isDefiLlamaAlert, isMerklAlert, isTurtleAlert, isBinancePriceAlert]);
+
+  const normalizedSubCoin = normalizeCoin(subscription.coin);
+  const [coin, setCoin] = useState(normalizedSubCoin);
 
   useEffect(() => {
     setDirection(subscription.direction);
@@ -92,8 +106,8 @@ export function SubscriptionRow({
     setWindowMinutes(subscription.window_minutes);
     setReportHour(subscription.report_hour ?? 8);
     setThresholdValue(subscription.threshold_value ?? 50);
-    setCoin(subscription.coin ?? "BTC");
-  }, [subscription]);
+    setCoin(normalizeCoin(subscription.coin));
+  }, [subscription, normalizeCoin]);
 
   const hasChanges =
     direction !== subscription.direction ||
@@ -101,7 +115,7 @@ export function SubscriptionRow({
     windowMinutes !== subscription.window_minutes ||
     reportHour !== (subscription.report_hour ?? 8) ||
     thresholdValue !== (subscription.threshold_value ?? 0) ||
-    coin !== (subscription.coin ?? "");
+    coin !== normalizedSubCoin;
 
   const category = event?.category ?? "general";
 
@@ -245,6 +259,52 @@ export function SubscriptionRow({
                 className={inputCls + " w-24"}
               />
             </div>
+          ) : isDefiLlamaAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>💰 Stablecoin yield:</span>
+              <select
+                value={coin}
+                onChange={(e) => setCoin(e.target.value)}
+                className={selectCls}
+              >
+                <option value="USDC">USDC only</option>
+                <option value="USDT">USDT only</option>
+                <option value="USDC_USDT">USDC + USDT</option>
+                <option value="ALL_STABLES">All stablecoins</option>
+              </select>
+              <span>APY ≥</span>
+              <input
+                type="number"
+                min={0.5}
+                max={50}
+                step={0.5}
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>TVL ≥</span>
+              <input
+                type="number"
+                min={0.1}
+                max={100}
+                step={0.1}
+                value={thresholdPct}
+                onChange={(e) => setThresholdPct(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>M</span>
+              <span className="ml-1">Withdrawal ≤</span>
+              <select
+                value={windowMinutes}
+                onChange={(e) => setWindowMinutes(Number(e.target.value))}
+                className={selectCls}
+              >
+                <option value={1}>Immediate</option>
+                <option value={1440}>1 day</option>
+                <option value={4320}>3 days</option>
+                <option value={10080}>7 days</option>
+              </select>
+            </div>
           ) : isMaxpainAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
               <span>Alert when</span>
@@ -363,7 +423,7 @@ export function SubscriptionRow({
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {(isMetricAlert || isDailyReport || isMaxpainAlert || isMerklAlert || isTurtleAlert || isBinancePriceAlert) && hasChanges && (
+          {(isMetricAlert || isDailyReport || isMaxpainAlert || isMerklAlert || isTurtleAlert || isBinancePriceAlert || isDefiLlamaAlert) && hasChanges && (
             <button
               onClick={() =>
                 onUpdate(subscription.id, thresholdPct, windowMinutes, direction, reportHour, thresholdValue, coin)
