@@ -49,6 +49,7 @@ const sourceLabels: Record<string, { label: string; color: string }> = {
   general_turtle_alert:        { label: "Turtle",       color: "bg-green-900/50 text-green-400 border-green-500/30" },
   general_binance_price_alert: { label: "Binance",      color: "bg-yellow-900/50 text-yellow-400 border-yellow-500/30" },
   general_alpha_alert:         { label: "Alpha",        color: "bg-pink-900/50 text-pink-400 border-pink-500/30" },
+  general_defillama_alert:     { label: "DeFi Llama",   color: "bg-indigo-900/50 text-indigo-400 border-indigo-500/30" },
   altura_metric_alert:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
   altura_daily_report:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
   neverland_metric_alert:      { label: "Neverland",    color: "bg-purple-900/50 text-purple-400 border-purple-500/30" },
@@ -68,19 +69,22 @@ export function EventCard({
   const isMerklAlert = event.name === "general_merkl_alert";
   const isTurtleAlert = event.name === "general_turtle_alert";
   const isBinancePriceAlert = event.name === "general_binance_price_alert";
+  const isDefiLlamaAlert = event.name === "general_defillama_alert";
   const isGeneralMetric = isMetricAlert && event.category === "general";
   const [alertMode, setAlertMode] = useState<"pct" | "value">(isGeneralMetric ? "value" : "pct");
   // Merkl: direction = stablecoin filter; Turtle: direction = deposit token filter
+  // DeFi Llama: coin = token filter (USDC, USDT, USDC_USDT, ALL_STABLES)
   const [direction, setDirection] = useState(
     isBinancePriceAlert ? "increase" : isMerklAlert ? "any" : isTurtleAlert ? "all"
     : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop"
   );
-  const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : isTurtleAlert ? 1 : 10);
-  const [windowMinutes, setWindowMinutes] = useState(isMaxpainAlert ? 1440 : 1);
+  const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : isTurtleAlert ? 1 : isDefiLlamaAlert ? 1 : 10);
+  const [windowMinutes, setWindowMinutes] = useState(isMaxpainAlert ? 1440 : isDefiLlamaAlert ? 7 : 1);
   const [reportHour, setReportHour] = useState(8);
-  const [thresholdValue, setThresholdValue] = useState(isBinancePriceAlert ? 100000 : isMerklAlert ? 10 : isTurtleAlert ? 5 : isMaxpainAlert ? 1 : 50);
+  const [thresholdValue, setThresholdValue] = useState(isBinancePriceAlert ? 100000 : isMerklAlert ? 10 : isTurtleAlert ? 5 : isMaxpainAlert ? 1 : isDefiLlamaAlert ? 3 : 50);
   // Merkl: coin = action (LEND/BORROW/HOLD); Turtle: coin = category tag
-  const [coin, setCoin] = useState(isMerklAlert ? "ALL" : isTurtleAlert ? "ALL" : "BTC");
+  // DeFi Llama: coin = token filter (USDC, USDT, USDC_USDT, ALL_STABLES)
+  const [coin, setCoin] = useState(isMerklAlert ? "ALL" : isTurtleAlert ? "ALL" : isDefiLlamaAlert ? "USDC_USDT" : "BTC");
 
   const inputCls =
     "w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none";
@@ -228,6 +232,51 @@ export function EventCard({
                 onChange={(e) => setThresholdValue(Number(e.target.value))}
                 className={inputCls + " w-24"}
               />
+            </div>
+          ) : isDefiLlamaAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>💰 Stablecoin yield:</span>
+              <select
+                value={coin}
+                onChange={(e) => setCoin(e.target.value)}
+                className={selectCls}
+              >
+                <option value="USDC">USDC only</option>
+                <option value="USDT">USDT only</option>
+                <option value="USDC_USDT">USDC + USDT</option>
+                <option value="ALL_STABLES">All stablecoins</option>
+              </select>
+              <span>APY ≥</span>
+              <input
+                type="number"
+                min={0.5}
+                max={50}
+                step={0.5}
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>% TVL ≥</span>
+              <input
+                type="number"
+                min={0.1}
+                max={100}
+                step={0.1}
+                value={thresholdPct}
+                onChange={(e) => setThresholdPct(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>M Withdrawal ≤</span>
+              <select
+                value={windowMinutes}
+                onChange={(e) => setWindowMinutes(Number(e.target.value))}
+                className={selectCls}
+              >
+                <option value={0}>Immediate</option>
+                <option value={1}>1 day</option>
+                <option value={3}>3 days</option>
+                <option value={7}>7 days</option>
+              </select>
             </div>
           ) : isMaxpainAlert ? (
             <>
@@ -405,6 +454,16 @@ export function EventCard({
             <button
               onClick={() =>
                 onSubscribe(event.id, undefined, undefined, direction, undefined, thresholdValue, coin)
+              }
+              disabled={!canToggle}
+              className={btnCls}
+            >
+              Subscribe
+            </button>
+          ) : isDefiLlamaAlert ? (
+            <button
+              onClick={() =>
+                onSubscribe(event.id, thresholdPct, windowMinutes, undefined, undefined, thresholdValue, coin)
               }
               disabled={!canToggle}
               className={btnCls}

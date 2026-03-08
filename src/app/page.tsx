@@ -181,14 +181,19 @@ export default function Home() {
       ETH_price: "ETH Price",
       ETH_long_maxpain: "ETH Long Max Pain (24h)",
       ETH_short_maxpain: "ETH Short Max Pain (24h)",
+      usdc_max_apy: "USDC Max APY",
+      usdt_max_apy: "USDT Max APY",
+      usdc_pools: "USDC Pools",
+      usdt_pools: "USDT Pools",
+      total_pools: "Total Pools",
     };
     return labels[key] || key;
   };
 
   const formatMetric = (key: string, value: number) => {
-    if (key === "apr" || key === "top_apr" || key === "turtle_top_yield") return `${value.toFixed(2)}%`;
+    if (key === "apr" || key === "top_apr" || key === "turtle_top_yield" || key === "usdc_max_apy" || key === "usdt_max_apy") return `${value.toFixed(2)}%`;
     if (key === "fear_greed_index") return `${value.toFixed(0)} / 100`;
-    if (key === "opportunities" || key === "turtle_opportunities") return `${value.toFixed(0)}`;
+    if (key === "opportunities" || key === "turtle_opportunities" || key === "usdc_pools" || key === "usdt_pools" || key === "total_pools") return `${value.toFixed(0)}`;
     // Alpha metrics (airdrops, top_points) are raw numbers, not USD amounts — do not prefix with $
     if (key === "airdrops" || key === "top_points") return `${value.toFixed(4)}`;
     if (key.includes("maxpain") && value === 0) return "N/A";
@@ -283,7 +288,7 @@ export default function Home() {
             }
           }
           // Group metrics by source for rendering sections
-          const sourceOrder = ["general", "maxpain", "merkl", "turtle", "altura", "neverland"];
+          const sourceOrder = ["general", "maxpain", "merkl", "turtle", "defillama", "altura", "neverland"];
           const metricsBySource = new Map<string, [string, number][]>();
           for (const [k, v] of Object.entries(allMetrics)) {
             const src = allSourceLabels[k] || "unknown";
@@ -312,7 +317,7 @@ export default function Home() {
                   return (
                     <div key={src}>
                       <div className="text-xs font-medium text-white/30 uppercase mb-2 border-b border-white/5 pb-1">
-                        {src === "general" ? "Fear & Greed" : src}
+                        {src === "general" ? "Fear & Greed" : src === "defillama" ? "DeFi Llama" : src}
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {metrics.map(([key, value]) => (
@@ -336,6 +341,11 @@ export default function Home() {
                             {key === "turtle_opportunities" && (
                               <div className="text-[10px] text-white/25 mt-0.5">
                                 Yield ≥ 5% · TVL ≥ $500K · Active
+                              </div>
+                            )}
+                            {key === "total_pools" && (
+                              <div className="text-[10px] text-white/25 mt-0.5">
+                                USDC/USDT · APY ≥ 0.1% · TVL ≥ $100K · ≤7d withdrawal
                               </div>
                             )}
                           </div>
