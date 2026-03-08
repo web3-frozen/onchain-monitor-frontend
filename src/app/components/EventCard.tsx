@@ -244,7 +244,6 @@ export function EventCard({
                 <option value="USDC">USDC only</option>
                 <option value="USDT">USDT only</option>
                 <option value="USDC_USDT">USDC + USDT</option>
-                <option value="ALL_STABLES">All stablecoins</option>
               </select>
               <span>APY ≥</span>
               <input
