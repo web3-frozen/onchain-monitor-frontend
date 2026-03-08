@@ -51,7 +51,7 @@ The frontend maps this to chain names for display.
 Current mapping:
 | API Category | Display Chain | Projects (source labels) |
 |---|---|---|
-| `general` | General | Fear & Greed, MaxPain, Merkl, Turtle, Binance |
+| `general` | General | Fear & Greed, MaxPain, Merkl, Turtle, Binance, DeFi Llama |
 | `altura` | Hyperliquid | Altura |
 | `neverland` | Monad | Neverland |
 
@@ -70,6 +70,17 @@ Merkl and Turtle share the same `isYieldAlert` UI pattern since they use identic
 - `direction` → stablecoin filter (stablecoin, non-stablecoin, any)
 
 When adding a new yield aggregator source, reuse `isYieldAlert` if it follows this pattern.
+
+### DeFi Llama Alert UI Pattern
+
+DeFi Llama alerts use a dedicated `isDefiLlamaAlert` UI with parameters:
+- `coin` → token filter (USDC, USDT, USDC_USDT, ALL_STABLES)
+- `thresholdValue` → min APY %
+- `thresholdPct` → min TVL in millions
+- `windowMinutes` → max withdrawal period (1=immediate, 1440=1d, 4320=3d, 10080=7d)
+- `direction` → always "any"
+
+When adding a new stablecoin yield source, reuse `isDefiLlamaAlert` if it follows this pattern.
 
 ## Tech Stack
 
@@ -94,3 +105,21 @@ npm run test    # Tests (placeholder)
 2. **Source labels on every card**: Users must always be able to identify which data source an alert comes from
 3. **Preview isolation**: Vercel previews use mock data only — no connection to production backend (security)
 4. **Category → Chain mapping**: API categories are project names; frontend maps them to chain names for user-facing display
+
+## Documentation Update Policy
+
+**IMPORTANT: Every code change must include corresponding documentation updates.**
+
+When reviewing PRs, always check and flag if any of the following are stale:
+
+1. **README.md** — Must reflect:
+   - All data sources in the features list and dashboard layout
+   - All subscription/alert types in the "Subscription Types" table
+   - All files in the "Project Structure" tree
+2. **`.github/copilot-instructions.md`** (this file) — Must reflect:
+   - New sources/events in the category mapping table
+   - New UI patterns (like yield alerts, DeFi Llama alerts, price alerts)
+   - New components or lib files in the architecture overview
+3. **`src/lib/mock-data.ts`** — Must include mock data for any new event or snapshot source
+
+**Rule**: If a PR adds/modifies a source, event, component, or UI pattern but does NOT update the corresponding documentation files, flag it as an issue in the review. Documentation must ship with the code change, not as a follow-up.
