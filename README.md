@@ -4,10 +4,11 @@ A Next.js dashboard for monitoring on-chain DeFi metrics and managing Telegram a
 
 ## Features
 
-- **Multi-source dashboard** — live metrics from Altura, Neverland, Fear & Greed, Max Pain, and Merkl
+- **Multi-source dashboard** — live metrics from Altura, Neverland, Fear & Greed, Max Pain, Merkl, Turtle, and DeFi Llama
 - **Chain-based grouping** — snapshots grouped by chain (General, HyperEVM, etc.) with source subtitles
 - **Configurable alerts** — subscribe with custom thresholds, directions (increase/drop), and time windows
 - **Merkl yield discovery** — filter by APR, TVL, action (LEND/HOLD/BORROW), stablecoin preference
+- **DeFi Llama stablecoin yields** — filter by APY, TVL, token (USDC/USDT/All stablecoins), withdrawal period
 - **Binance price alerts** — subscribe to price increase/decrease targets for any coin (default BTC/USDT)
 - **Telegram linking** — link your Telegram account with a 6-character OTP via `@crypto_stat_monitoring_bot`
 - **Responsive UI** — dark theme, Tailwind CSS
@@ -21,7 +22,7 @@ A Next.js dashboard for monitoring on-chain DeFi metrics and managing Telegram a
 ## Dashboard Layout
 
 Metrics are grouped by chain:
-- **General** — Fear & Greed Index, BTC/ETH Max Pain (24h), Merkl opportunities
+- **General** — Fear & Greed Index, BTC/ETH Max Pain (24h), Merkl opportunities, DeFi Llama stablecoin yields
 - **HyperEVM** — Altura (TVL, AVLT Price, APR), Neverland (TVL, DUST Price, Fees)
 
 Each source shows a subtitle for attribution. Max Pain values display "N/A" when data is insufficient. Interval labels (e.g., "(24h)") indicate the calculation window.
@@ -34,6 +35,7 @@ Each source shows a subtitle for attribution. Max Pain values display "N/A" when
 | **Metric alert** | Metric, % change, direction (increase/drop), time window (minutes) |
 | **Max Pain alert** | Coin (BTC/ETH), position (LONG/SHORT), % proximity |
 | **Merkl alert** | Min APR, min TVL, action (LEND/HOLD/BORROW/LEND,HOLD), stablecoin filter |
+| **DeFi Llama alert** | Token (USDC/USDT/USDC+USDT/All stablecoins), min APY, min TVL ($M), max withdrawal period |
 | **Binance price alert** | Coin symbol (BTC/ETH/...), direction (increase/decrease), target price |
 | **Daily report** | Report time (UTC+8) |
 
@@ -52,6 +54,7 @@ src/
   lib/
     api.ts                    # Typed API client (centralized fetch logic)
     types.ts                  # Shared TypeScript interfaces
+    mock-data.ts              # Mock data for preview deployments
 ```
 
 ## API Integration
