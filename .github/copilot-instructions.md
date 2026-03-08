@@ -106,6 +106,16 @@ npm run test    # Tests (placeholder)
 3. **Preview isolation**: Vercel previews use mock data only — no connection to production backend (security)
 4. **Category → Chain mapping**: API categories are project names; frontend maps them to chain names for user-facing display
 
+## Testing Policy
+
+**IMPORTANT: Every code change must include verification before committing.**
+
+1. **Before committing any change**, run `npm run lint && npm run build` to ensure no regressions
+2. **When adding or modifying components**, verify the build succeeds and lint passes
+3. **When adding new mock data** (`src/lib/mock-data.ts`), ensure the mock API routes return valid data that the UI can render
+4. **When modifying types** (`src/lib/types.ts`), run `npm run build` to catch type errors across all consumers
+5. **CI runs `npm run lint` and `npm run build` on every PR** — ensure your changes pass locally first
+
 ## Documentation Update Policy
 
 **IMPORTANT: Every code change must include corresponding documentation updates.**
