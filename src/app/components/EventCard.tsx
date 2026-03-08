@@ -79,7 +79,7 @@ export function EventCard({
     : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop"
   );
   const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : isTurtleAlert ? 1 : isDefiLlamaAlert ? 1 : 10);
-  const [windowMinutes, setWindowMinutes] = useState(isMaxpainAlert ? 1440 : isDefiLlamaAlert ? 7 : 1);
+  const [windowMinutes, setWindowMinutes] = useState(isMaxpainAlert ? 1440 : isDefiLlamaAlert ? 10080 : 1);
   const [reportHour, setReportHour] = useState(8);
   const [thresholdValue, setThresholdValue] = useState(isBinancePriceAlert ? 100000 : isMerklAlert ? 10 : isTurtleAlert ? 5 : isMaxpainAlert ? 1 : isDefiLlamaAlert ? 3 : 50);
   // Merkl: coin = action (LEND/BORROW/HOLD); Turtle: coin = category tag
@@ -274,9 +274,9 @@ export function EventCard({
                 className={selectCls}
               >
                 <option value={0}>Immediate</option>
-                <option value={1}>1 day</option>
-                <option value={3}>3 days</option>
-                <option value={7}>7 days</option>
+                <option value={1440}>1 day</option>
+                <option value={4320}>3 days</option>
+                <option value={10080}>7 days</option>
               </select>
             </div>
           ) : isMaxpainAlert ? (

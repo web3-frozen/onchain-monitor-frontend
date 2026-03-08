@@ -288,9 +288,9 @@ export function SubscriptionRow({
                 className={selectCls}
               >
                 <option value={0}>Immediate</option>
-                <option value={1}>1 day</option>
-                <option value={3}>3 days</option>
-                <option value={7}>7 days</option>
+                <option value={1440}>1 day</option>
+                <option value={4320}>3 days</option>
+                <option value={10080}>7 days</option>
               </select>
             </div>
           ) : isMaxpainAlert ? (
