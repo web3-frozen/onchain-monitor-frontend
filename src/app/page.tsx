@@ -313,7 +313,6 @@ export default function Home() {
               <div className="p-4 border border-white/10 rounded-lg bg-white/5 space-y-4">
                 {sortedSources.map((src) => {
                   const metrics = metricsBySource.get(src)!;
-                  const sourceSnap = snaps.find((s) => s.source === src);
                   return (
                     <div key={src}>
                       <div className="text-xs font-medium text-white/30 uppercase mb-2 border-b border-white/5 pb-1">
