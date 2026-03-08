@@ -287,7 +287,7 @@ export function SubscriptionRow({
                 onChange={(e) => setWindowMinutes(Number(e.target.value))}
                 className={selectCls}
               >
-                <option value={0}>Immediate</option>
+                <option value={1}>Immediate</option>
                 <option value={1440}>1 day</option>
                 <option value={4320}>3 days</option>
                 <option value={10080}>7 days</option>
