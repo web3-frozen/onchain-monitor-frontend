@@ -74,7 +74,7 @@ export const mockStats: Snapshot[] = [
   {
     source: "defillama",
     chain: "General",
-    metrics: { usdc_max_apy: 12.5, usdt_max_apy: 11.8, usdc_pools: 42, usdt_pools: 38, total_pools: 156 },
+    metrics: { usdc_max_apy: 12.5, usdt_max_apy: 11.8, usdc_pools: 42, usdt_pools: 38, total_pools: 80 },
     data_sources: { usdc_max_apy: "DeFi Llama", usdt_max_apy: "DeFi Llama", usdc_pools: "DeFi Llama", usdt_pools: "DeFi Llama", total_pools: "DeFi Llama" },
     fetched_at: new Date().toISOString(),
   },

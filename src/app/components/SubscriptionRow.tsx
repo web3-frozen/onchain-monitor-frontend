@@ -86,7 +86,9 @@ export function SubscriptionRow({
   const [thresholdValue, setThresholdValue] = useState(
     subscription.threshold_value ?? 50
   );
-  const [coin, setCoin] = useState(subscription.coin ?? "BTC");
+  const [coin, setCoin] = useState(
+    subscription.coin || (isDefiLlamaAlert ? "USDC_USDT" : isMerklAlert ? "ALL" : isTurtleAlert ? "ALL" : "BTC")
+  );
 
   useEffect(() => {
     setDirection(subscription.direction);
@@ -94,8 +96,8 @@ export function SubscriptionRow({
     setWindowMinutes(subscription.window_minutes);
     setReportHour(subscription.report_hour ?? 8);
     setThresholdValue(subscription.threshold_value ?? 50);
-    setCoin(subscription.coin ?? "BTC");
-  }, [subscription]);
+    setCoin(subscription.coin || (isDefiLlamaAlert ? "USDC_USDT" : isMerklAlert ? "ALL" : isTurtleAlert ? "ALL" : "BTC"));
+  }, [subscription, isDefiLlamaAlert, isMerklAlert, isTurtleAlert]);
 
   const hasChanges =
     direction !== subscription.direction ||
