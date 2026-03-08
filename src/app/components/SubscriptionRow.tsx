@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface Subscription {
   id: number;
@@ -87,7 +87,7 @@ export function SubscriptionRow({
     subscription.threshold_value ?? 50
   );
   // Normalize coin based on alert type - preserve proper defaults
-  const normalizeCoin = (c: string | undefined | null) => {
+  const normalizeCoin = useCallback((c: string | undefined | null) => {
     if (c) return c; // If coin has a value, use it
     // Default for each alert type when coin is empty/null
     if (isDefiLlamaAlert) return "USDC_USDT";
@@ -95,8 +95,10 @@ export function SubscriptionRow({
     if (isTurtleAlert) return "ALL";
     if (isBinancePriceAlert) return "BTC";
     return c ?? ""; // For other alerts, keep empty
-  };
-  const [coin, setCoin] = useState(normalizeCoin(subscription.coin));
+  }, [isDefiLlamaAlert, isMerklAlert, isTurtleAlert, isBinancePriceAlert]);
+
+  const normalizedSubCoin = normalizeCoin(subscription.coin);
+  const [coin, setCoin] = useState(normalizedSubCoin);
 
   useEffect(() => {
     setDirection(subscription.direction);
@@ -105,7 +107,7 @@ export function SubscriptionRow({
     setReportHour(subscription.report_hour ?? 8);
     setThresholdValue(subscription.threshold_value ?? 50);
     setCoin(normalizeCoin(subscription.coin));
-  }, [subscription, isDefiLlamaAlert]);
+  }, [subscription, normalizeCoin]);
 
   const hasChanges =
     direction !== subscription.direction ||
@@ -113,7 +115,7 @@ export function SubscriptionRow({
     windowMinutes !== subscription.window_minutes ||
     reportHour !== (subscription.report_hour ?? 8) ||
     thresholdValue !== (subscription.threshold_value ?? 0) ||
-    coin !== (subscription.coin ?? "");
+    coin !== normalizedSubCoin;
 
   const category = event?.category ?? "general";
 
