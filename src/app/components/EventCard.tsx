@@ -76,7 +76,7 @@ export function EventCard({
   // DeFi Llama: coin = token filter (USDC, USDT, USDC_USDT, ALL_STABLES)
   const [direction, setDirection] = useState(
     isBinancePriceAlert ? "increase" : isMerklAlert ? "any" : isTurtleAlert ? "all"
-    : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop"
+    : isDefiLlamaAlert ? "any" : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop"
   );
   const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : isTurtleAlert ? 1 : isDefiLlamaAlert ? 1 : 10);
   const [windowMinutes, setWindowMinutes] = useState(isMaxpainAlert ? 1440 : isDefiLlamaAlert ? 10080 : 1);
@@ -464,7 +464,7 @@ export function EventCard({
           ) : isDefiLlamaAlert ? (
             <button
               onClick={() =>
-                onSubscribe(event.id, thresholdPct, windowMinutes, "any", undefined, thresholdValue, coin)
+                onSubscribe(event.id, thresholdPct, windowMinutes, direction, undefined, thresholdValue, coin)
               }
               disabled={!canToggle}
               className={btnCls}
