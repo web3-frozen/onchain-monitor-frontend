@@ -280,7 +280,8 @@ export function SubscriptionRow({
                 onChange={(e) => setThresholdPct(Number(e.target.value))}
                 className={inputCls}
               />
-              <span>M Withdrawal ≤</span>
+              <span>M</span>
+              <span className="ml-1">Withdrawal ≤</span>
               <select
                 value={windowMinutes}
                 onChange={(e) => setWindowMinutes(Number(e.target.value))}
