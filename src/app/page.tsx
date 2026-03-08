@@ -346,12 +346,12 @@ export default function Home() {
                             )}
                             {key === "total_pools" && (
                               <div className="text-[10px] text-white/25 mt-0.5">
-                                USDC/USDT · APY ≥ 0.1% · TVL ≥ $100K · ≤7d withdrawal
+                                USDC/USDT · APY ≥ 0.1% · TVL ≥ $1M · ≤7d withdrawal
                               </div>
                             )}
                             {key === "all_stable_pools" && (
                               <div className="text-[10px] text-white/25 mt-0.5">
-                                All stablecoins · APY ≥ 0.1% · TVL ≥ $100K · ≤7d withdrawal
+                                All stablecoins · APY ≥ 0.1% · TVL ≥ $1M · ≤7d withdrawal
                               </div>
                             )}
                           </div>
