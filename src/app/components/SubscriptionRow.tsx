@@ -86,10 +86,15 @@ export function SubscriptionRow({
   const [thresholdValue, setThresholdValue] = useState(
     subscription.threshold_value ?? 50
   );
-  // For DeFi Llama, normalize empty coin to USDC_USDT; for others, keep as-is
+  // Normalize coin based on alert type - preserve proper defaults
   const normalizeCoin = (c: string | undefined | null) => {
-    if (isDefiLlamaAlert && !c) return "USDC_USDT";
-    return c ?? "";
+    if (c) return c; // If coin has a value, use it
+    // Default for each alert type when coin is empty/null
+    if (isDefiLlamaAlert) return "USDC_USDT";
+    if (isMerklAlert) return "ALL";
+    if (isTurtleAlert) return "ALL";
+    if (isBinancePriceAlert) return "BTC";
+    return c ?? ""; // For other alerts, keep empty
   };
   const [coin, setCoin] = useState(normalizeCoin(subscription.coin));
 

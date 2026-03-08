@@ -464,7 +464,7 @@ export function EventCard({
           ) : isDefiLlamaAlert ? (
             <button
               onClick={() =>
-                onSubscribe(event.id, thresholdPct, windowMinutes, undefined, undefined, thresholdValue, coin)
+                onSubscribe(event.id, thresholdPct, windowMinutes, "any", undefined, thresholdValue, coin)
               }
               disabled={!canToggle}
               className={btnCls}
