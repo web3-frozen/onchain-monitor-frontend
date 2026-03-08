@@ -185,15 +185,17 @@ export default function Home() {
       usdt_max_apy: "USDT Max APY",
       usdc_pools: "USDC Pools",
       usdt_pools: "USDT Pools",
-      total_pools: "Total Pools",
+      total_pools: "USDC/USDT Pools",
+      all_stable_max_apy: "All Stable Max APY",
+      all_stable_pools: "All Stable Pools",
     };
     return labels[key] || key;
   };
 
   const formatMetric = (key: string, value: number) => {
-    if (key === "apr" || key === "top_apr" || key === "turtle_top_yield" || key === "usdc_max_apy" || key === "usdt_max_apy") return `${value.toFixed(2)}%`;
+    if (key === "apr" || key === "top_apr" || key === "turtle_top_yield" || key === "usdc_max_apy" || key === "usdt_max_apy" || key === "all_stable_max_apy") return `${value.toFixed(2)}%`;
     if (key === "fear_greed_index") return `${value.toFixed(0)} / 100`;
-    if (key === "opportunities" || key === "turtle_opportunities" || key === "usdc_pools" || key === "usdt_pools" || key === "total_pools") return `${value.toFixed(0)}`;
+    if (key === "opportunities" || key === "turtle_opportunities" || key === "usdc_pools" || key === "usdt_pools" || key === "total_pools" || key === "all_stable_pools") return `${value.toFixed(0)}`;
     // Alpha metrics (airdrops, top_points) are raw numbers, not USD amounts — do not prefix with $
     if (key === "airdrops" || key === "top_points") return `${value.toFixed(4)}`;
     if (key.includes("maxpain") && value === 0) return "N/A";
@@ -345,6 +347,11 @@ export default function Home() {
                             {key === "total_pools" && (
                               <div className="text-[10px] text-white/25 mt-0.5">
                                 USDC/USDT · APY ≥ 0.1% · TVL ≥ $100K · ≤7d withdrawal
+                              </div>
+                            )}
+                            {key === "all_stable_pools" && (
+                              <div className="text-[10px] text-white/25 mt-0.5">
+                                All stablecoins · APY ≥ 0.1% · TVL ≥ $100K · ≤7d withdrawal
                               </div>
                             )}
                           </div>
