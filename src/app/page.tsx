@@ -227,7 +227,14 @@ export default function Home() {
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-brand mb-2">Onchain Monitor</h1>
+      <div className="flex items-baseline justify-between mb-2">
+        <h1 className="text-3xl font-bold text-brand">Onchain Monitor</h1>
+        {process.env.NEXT_PUBLIC_BUILD_TIME && (
+          <span className="text-xs text-white/30" title={process.env.NEXT_PUBLIC_BUILD_TIME}>
+            v{new Date(process.env.NEXT_PUBLIC_BUILD_TIME).toLocaleDateString("en-CA")}.{new Date(process.env.NEXT_PUBLIC_BUILD_TIME).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        )}
+      </div>
       <p className="text-white/50 mb-6">
         Monitor on-chain stats and subscribe to Telegram alerts via{" "}
         <a
