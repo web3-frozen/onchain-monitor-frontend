@@ -342,7 +342,7 @@ export function SubscriptionRow({
               <span>% TVL ≥</span>
               <input
                 type="number"
-                min={0.01}
+                min={0}
                 max={100}
                 step={0.01}
                 value={thresholdPct}
