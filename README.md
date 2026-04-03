@@ -9,9 +9,11 @@ A Next.js dashboard for monitoring on-chain DeFi metrics and managing Telegram a
 - **Configurable alerts** — subscribe with custom thresholds, directions (increase/drop), and time windows
 - **Merkl yield discovery** — filter by APR, TVL, action (LEND/HOLD/BORROW), stablecoin preference
 - **DeFi Llama stablecoin yields** — filter by APY, TVL, token (USDC/USDT/All stablecoins), withdrawal period
+- **DeFi Llama LP rewards** — monitor LP/DEX pool reward APY across chains (Sui, Ethereum, Arbitrum, etc.) with configurable TVL threshold (including 0 for new pools)
 - **Binance price alerts** — subscribe to price increase/decrease targets for any coin (default BTC/USDT)
 - **Telegram linking** — link your Telegram account with a 6-character OTP via `@crypto_stat_monitoring_bot`
 - **Responsive UI** — dark theme, Tailwind CSS
+- **Build version display** — shows build timestamp in the header for easy version identification
 
 ## Tech Stack
 
@@ -22,7 +24,7 @@ A Next.js dashboard for monitoring on-chain DeFi metrics and managing Telegram a
 ## Dashboard Layout
 
 Metrics are grouped by chain:
-- **General** — Fear & Greed Index, BTC/ETH Max Pain (24h), Merkl opportunities, DeFi Llama stablecoin yields
+- **General** — Fear & Greed Index, BTC/ETH Max Pain (24h), Merkl opportunities, DeFi Llama stablecoin yields, DeFi Llama LP rewards
 - **HyperEVM** — Altura (TVL, AVLT Price, APR), Neverland (TVL, DUST Price, Fees)
 
 Each source shows a subtitle for attribution. Max Pain values display "N/A" when data is insufficient. Interval labels (e.g., "(24h)") indicate the calculation window.
@@ -36,6 +38,7 @@ Each source shows a subtitle for attribution. Max Pain values display "N/A" when
 | **Max Pain alert** | Coin (BTC/ETH), position (LONG/SHORT), % proximity |
 | **Merkl alert** | Min APR, min TVL, action (LEND/HOLD/BORROW/LEND,HOLD), stablecoin filter |
 | **DeFi Llama alert** | Token (USDC/USDT/USDC+USDT/All stablecoins), min APY, min TVL ($M), max withdrawal period |
+| **DeFi Llama LP alert** | Chain filter (All/Sui/Ethereum/...), min reward APY, min TVL ($M, allows 0) |
 | **Binance price alert** | Coin symbol (BTC/ETH/...), direction (increase/decrease), target price |
 | **Daily report** | Report time (UTC+8) |
 
