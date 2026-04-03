@@ -188,14 +188,17 @@ export default function Home() {
       total_pools: "USDC/USDT Pools",
       all_stable_max_apy: "All Stable Max APY",
       all_stable_pools: "All Stable Pools",
+      lp_pools: "LP Pools",
+      lp_chains: "LP Chains",
+      lp_top_reward: "Top LP Reward APY",
     };
     return labels[key] || key;
   };
 
   const formatMetric = (key: string, value: number) => {
-    if (key === "apr" || key === "top_apr" || key === "turtle_top_yield" || key === "usdc_max_apy" || key === "usdt_max_apy" || key === "all_stable_max_apy") return `${value.toFixed(2)}%`;
+    if (key === "apr" || key === "top_apr" || key === "turtle_top_yield" || key === "usdc_max_apy" || key === "usdt_max_apy" || key === "all_stable_max_apy" || key === "lp_top_reward") return `${value.toFixed(2)}%`;
     if (key === "fear_greed_index") return `${value.toFixed(0)} / 100`;
-    if (key === "opportunities" || key === "turtle_opportunities" || key === "usdc_pools" || key === "usdt_pools" || key === "total_pools" || key === "all_stable_pools") return `${value.toFixed(0)}`;
+    if (key === "opportunities" || key === "turtle_opportunities" || key === "usdc_pools" || key === "usdt_pools" || key === "total_pools" || key === "all_stable_pools" || key === "lp_pools" || key === "lp_chains") return `${value.toFixed(0)}`;
     // Alpha metrics (airdrops, top_points) are raw numbers, not USD amounts — do not prefix with $
     if (key === "airdrops" || key === "top_points") return `${value.toFixed(4)}`;
     if (key.includes("maxpain") && value === 0) return "N/A";
@@ -290,7 +293,7 @@ export default function Home() {
             }
           }
           // Group metrics by source for rendering sections
-          const sourceOrder = ["general", "maxpain", "merkl", "turtle", "defillama", "altura", "neverland"];
+          const sourceOrder = ["general", "maxpain", "merkl", "turtle", "defillama", "defillama_lp", "altura", "neverland"];
           const metricsBySource = new Map<string, [string, number][]>();
           for (const [k, v] of Object.entries(allMetrics)) {
             const src = allSourceLabels[k] || "unknown";
@@ -318,7 +321,7 @@ export default function Home() {
                   return (
                     <div key={src}>
                       <div className="text-xs font-medium text-white/30 uppercase mb-2 border-b border-white/5 pb-1">
-                        {src === "general" ? "Fear & Greed" : src === "defillama" ? "DeFi Llama" : src}
+                        {src === "general" ? "Fear & Greed" : src === "defillama" ? "DeFi Llama" : src === "defillama_lp" ? "DeFi Llama LP Rewards" : src}
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {metrics.map(([key, value]) => (
@@ -352,6 +355,11 @@ export default function Home() {
                             {key === "all_stable_pools" && (
                               <div className="text-[10px] text-white/25 mt-0.5">
                                 All stablecoins · APY ≥ 0.1% · TVL ≥ $1M · ≤7d withdrawal
+                              </div>
+                            )}
+                            {key === "lp_pools" && (
+                              <div className="text-[10px] text-white/25 mt-0.5">
+                                DEX LP pools · Reward APY ≥ 0.1% · TVL ≥ $100K
                               </div>
                             )}
                           </div>

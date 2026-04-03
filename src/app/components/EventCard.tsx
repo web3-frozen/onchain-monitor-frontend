@@ -50,6 +50,7 @@ const sourceLabels: Record<string, { label: string; color: string }> = {
   general_binance_price_alert: { label: "Binance",      color: "bg-yellow-900/50 text-yellow-400 border-yellow-500/30" },
   general_alpha_alert:         { label: "Alpha",        color: "bg-pink-900/50 text-pink-400 border-pink-500/30" },
   general_defillama_alert:     { label: "DeFi Llama",   color: "bg-indigo-900/50 text-indigo-400 border-indigo-500/30" },
+  general_defillama_lp_alert:  { label: "DeFi Llama LP", color: "bg-cyan-900/50 text-cyan-400 border-cyan-500/30" },
   altura_metric_alert:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
   altura_daily_report:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
   neverland_metric_alert:      { label: "Neverland",    color: "bg-purple-900/50 text-purple-400 border-purple-500/30" },
@@ -70,21 +71,23 @@ export function EventCard({
   const isTurtleAlert = event.name === "general_turtle_alert";
   const isBinancePriceAlert = event.name === "general_binance_price_alert";
   const isDefiLlamaAlert = event.name === "general_defillama_alert";
+  const isDefiLlamaLPAlert = event.name === "general_defillama_lp_alert";
   const isGeneralMetric = isMetricAlert && event.category === "general";
   const [alertMode, setAlertMode] = useState<"pct" | "value">(isGeneralMetric ? "value" : "pct");
   // Merkl: direction = stablecoin filter; Turtle: direction = deposit token filter
   // DeFi Llama: coin = token filter (USDC, USDT, USDC_USDT, ALL_STABLES)
   const [direction, setDirection] = useState(
     isBinancePriceAlert ? "increase" : isMerklAlert ? "any" : isTurtleAlert ? "all"
-    : isDefiLlamaAlert ? "any" : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop"
+    : isDefiLlamaAlert ? "any" : isDefiLlamaLPAlert ? "any" : isMaxpainAlert ? "long" : isGeneralMetric ? "higher" : "drop"
   );
-  const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : isTurtleAlert ? 1 : isDefiLlamaAlert ? 1 : 10);
+  const [thresholdPct, setThresholdPct] = useState(isMerklAlert ? 1 : isTurtleAlert ? 1 : isDefiLlamaAlert ? 1 : isDefiLlamaLPAlert ? 0.1 : 10);
   const [windowMinutes, setWindowMinutes] = useState(isMaxpainAlert ? 1440 : isDefiLlamaAlert ? 10080 : 1);
   const [reportHour, setReportHour] = useState(8);
-  const [thresholdValue, setThresholdValue] = useState(isBinancePriceAlert ? 100000 : isMerklAlert ? 10 : isTurtleAlert ? 5 : isMaxpainAlert ? 1 : isDefiLlamaAlert ? 3 : 50);
+  const [thresholdValue, setThresholdValue] = useState(isBinancePriceAlert ? 100000 : isMerklAlert ? 10 : isTurtleAlert ? 5 : isMaxpainAlert ? 1 : isDefiLlamaAlert ? 3 : isDefiLlamaLPAlert ? 5 : 50);
   // Merkl: coin = action (LEND/BORROW/HOLD); Turtle: coin = category tag
   // DeFi Llama: coin = token filter (USDC, USDT, USDC_USDT, ALL_STABLES)
-  const [coin, setCoin] = useState(isMerklAlert ? "ALL" : isTurtleAlert ? "ALL" : isDefiLlamaAlert ? "USDC_USDT" : "BTC");
+  // DeFi Llama LP: coin = chain filter (Sui, Ethereum, ALL, etc.)
+  const [coin, setCoin] = useState(isMerklAlert ? "ALL" : isTurtleAlert ? "ALL" : isDefiLlamaAlert ? "USDC_USDT" : isDefiLlamaLPAlert ? "ALL" : "BTC");
 
   const inputCls =
     "w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none";
@@ -279,6 +282,49 @@ export function EventCard({
                 <option value={10080}>7 days</option>
               </select>
             </div>
+          ) : isDefiLlamaLPAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>🏊 LP rewards:</span>
+              <select
+                value={coin}
+                onChange={(e) => setCoin(e.target.value)}
+                className={selectCls}
+              >
+                <option value="ALL">All chains</option>
+                <option value="Sui">Sui</option>
+                <option value="Ethereum">Ethereum</option>
+                <option value="Arbitrum">Arbitrum</option>
+                <option value="Base">Base</option>
+                <option value="Optimism">Optimism</option>
+                <option value="BSC">BSC</option>
+                <option value="Polygon">Polygon</option>
+                <option value="Avalanche">Avalanche</option>
+                <option value="Solana">Solana</option>
+                <option value="Sonic">Sonic</option>
+                <option value="Berachain">Berachain</option>
+              </select>
+              <span>Reward APY ≥</span>
+              <input
+                type="number"
+                min={0.5}
+                max={500}
+                step={0.5}
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>% TVL ≥</span>
+              <input
+                type="number"
+                min={0.01}
+                max={100}
+                step={0.01}
+                value={thresholdPct}
+                onChange={(e) => setThresholdPct(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>M</span>
+            </div>
           ) : isMaxpainAlert ? (
             <>
               <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
@@ -465,6 +511,16 @@ export function EventCard({
             <button
               onClick={() =>
                 onSubscribe(event.id, thresholdPct, windowMinutes, direction, undefined, thresholdValue, coin)
+              }
+              disabled={!canToggle}
+              className={btnCls}
+            >
+              Subscribe
+            </button>
+          ) : isDefiLlamaLPAlert ? (
+            <button
+              onClick={() =>
+                onSubscribe(event.id, thresholdPct, undefined, direction, undefined, thresholdValue, coin)
               }
               disabled={!canToggle}
               className={btnCls}

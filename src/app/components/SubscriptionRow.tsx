@@ -56,6 +56,7 @@ const sourceLabels: Record<string, { label: string; color: string }> = {
   general_binance_price_alert: { label: "Binance",      color: "bg-yellow-900/50 text-yellow-400 border-yellow-500/30" },
   general_alpha_alert:         { label: "Alpha",        color: "bg-pink-900/50 text-pink-400 border-pink-500/30" },
   general_defillama_alert:     { label: "DeFi Llama",   color: "bg-indigo-900/50 text-indigo-400 border-indigo-500/30" },
+  general_defillama_lp_alert:  { label: "DeFi Llama LP", color: "bg-cyan-900/50 text-cyan-400 border-cyan-500/30" },
   altura_metric_alert:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
   altura_daily_report:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
   neverland_metric_alert:      { label: "Neverland",    color: "bg-purple-900/50 text-purple-400 border-purple-500/30" },
@@ -75,6 +76,7 @@ export function SubscriptionRow({
   const isTurtleAlert = event?.name === "general_turtle_alert";
   const isBinancePriceAlert = event?.name === "general_binance_price_alert";
   const isDefiLlamaAlert = event?.name === "general_defillama_alert";
+  const isDefiLlamaLPAlert = event?.name === "general_defillama_lp_alert";
   const isValueAlert = isMetricAlert && (subscription.direction === "higher" || subscription.direction === "lower");
 
   const [direction, setDirection] = useState(subscription.direction);
@@ -91,11 +93,12 @@ export function SubscriptionRow({
     if (c) return c; // If coin has a value, use it
     // Default for each alert type when coin is empty/null
     if (isDefiLlamaAlert) return "USDC_USDT";
+    if (isDefiLlamaLPAlert) return "ALL";
     if (isMerklAlert) return "ALL";
     if (isTurtleAlert) return "ALL";
     if (isBinancePriceAlert) return "BTC";
     return c ?? ""; // For other alerts, keep empty
-  }, [isDefiLlamaAlert, isMerklAlert, isTurtleAlert, isBinancePriceAlert]);
+  }, [isDefiLlamaAlert, isDefiLlamaLPAlert, isMerklAlert, isTurtleAlert, isBinancePriceAlert]);
 
   const normalizedSubCoin = normalizeCoin(subscription.coin);
   const [coin, setCoin] = useState(normalizedSubCoin);
@@ -305,6 +308,49 @@ export function SubscriptionRow({
                 <option value={10080}>7 days</option>
               </select>
             </div>
+          ) : isDefiLlamaLPAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>🏊 LP rewards:</span>
+              <select
+                value={coin}
+                onChange={(e) => setCoin(e.target.value)}
+                className={selectCls}
+              >
+                <option value="ALL">All chains</option>
+                <option value="Sui">Sui</option>
+                <option value="Ethereum">Ethereum</option>
+                <option value="Arbitrum">Arbitrum</option>
+                <option value="Base">Base</option>
+                <option value="Optimism">Optimism</option>
+                <option value="BSC">BSC</option>
+                <option value="Polygon">Polygon</option>
+                <option value="Avalanche">Avalanche</option>
+                <option value="Solana">Solana</option>
+                <option value="Sonic">Sonic</option>
+                <option value="Berachain">Berachain</option>
+              </select>
+              <span>Reward APY ≥</span>
+              <input
+                type="number"
+                min={0.5}
+                max={500}
+                step={0.5}
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>% TVL ≥</span>
+              <input
+                type="number"
+                min={0.01}
+                max={100}
+                step={0.01}
+                value={thresholdPct}
+                onChange={(e) => setThresholdPct(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>M</span>
+            </div>
           ) : isMaxpainAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
               <span>Alert when</span>
@@ -423,7 +469,7 @@ export function SubscriptionRow({
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {(isMetricAlert || isDailyReport || isMaxpainAlert || isMerklAlert || isTurtleAlert || isBinancePriceAlert || isDefiLlamaAlert) && hasChanges && (
+          {(isMetricAlert || isDailyReport || isMaxpainAlert || isMerklAlert || isTurtleAlert || isBinancePriceAlert || isDefiLlamaAlert || isDefiLlamaLPAlert) && hasChanges && (
             <button
               onClick={() =>
                 onUpdate(subscription.id, thresholdPct, windowMinutes, direction, reportHour, thresholdValue, coin)
