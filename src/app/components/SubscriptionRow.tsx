@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { ProtocolSearch } from "./ProtocolSearch";
 
 interface Subscription {
   id: number;
@@ -57,6 +58,7 @@ const sourceLabels: Record<string, { label: string; color: string }> = {
   general_alpha_alert:         { label: "Alpha",        color: "bg-pink-900/50 text-pink-400 border-pink-500/30" },
   general_defillama_alert:     { label: "DeFi Llama",   color: "bg-indigo-900/50 text-indigo-400 border-indigo-500/30" },
   general_defillama_lp_alert:  { label: "DeFi Llama LP", color: "bg-cyan-900/50 text-cyan-400 border-cyan-500/30" },
+  general_defillama_tvl_alert: { label: "DeFi Llama TVL", color: "bg-violet-900/50 text-violet-400 border-violet-500/30" },
   altura_metric_alert:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
   altura_daily_report:         { label: "Altura",       color: "bg-emerald-900/50 text-emerald-400 border-emerald-500/30" },
   neverland_metric_alert:      { label: "Neverland",    color: "bg-purple-900/50 text-purple-400 border-purple-500/30" },
@@ -77,6 +79,7 @@ export function SubscriptionRow({
   const isBinancePriceAlert = event?.name === "general_binance_price_alert";
   const isDefiLlamaAlert = event?.name === "general_defillama_alert";
   const isDefiLlamaLPAlert = event?.name === "general_defillama_lp_alert";
+  const isDefiLlamaTVLAlert = event?.name === "general_defillama_tvl_alert";
   const isValueAlert = isMetricAlert && (subscription.direction === "higher" || subscription.direction === "lower");
 
   const [direction, setDirection] = useState(subscription.direction);
@@ -351,6 +354,42 @@ export function SubscriptionRow({
               />
               <span>M</span>
             </div>
+          ) : isDefiLlamaTVLAlert ? (
+            <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
+              <span>📊 Protocol TVL:</span>
+              <ProtocolSearch
+                value={coin}
+                onChange={(slug) => setCoin(slug)}
+                className="w-40 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-sm focus:border-brand focus:outline-none"
+              />
+              <select
+                value={direction}
+                onChange={(e) => setDirection(e.target.value)}
+                className={selectCls}
+              >
+                <option value="drop">drops</option>
+                <option value="increase">increases</option>
+              </select>
+              <span>&gt;</span>
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={thresholdPct}
+                onChange={(e) => setThresholdPct(Number(e.target.value))}
+                className={inputCls}
+              />
+              <span>% in</span>
+              <select
+                value={windowMinutes}
+                onChange={(e) => setWindowMinutes(Number(e.target.value))}
+                className={selectCls}
+              >
+                <option value={1440}>1 day</option>
+                <option value={10080}>7 days</option>
+                <option value={43200}>30 days</option>
+              </select>
+            </div>
           ) : isMaxpainAlert ? (
             <div className="flex items-center gap-1.5 text-sm text-white/70 flex-wrap mt-1">
               <span>Alert when</span>
@@ -469,7 +508,7 @@ export function SubscriptionRow({
         </div>
 
         <div className="flex items-center gap-2 ml-4">
-          {(isMetricAlert || isDailyReport || isMaxpainAlert || isMerklAlert || isTurtleAlert || isBinancePriceAlert || isDefiLlamaAlert || isDefiLlamaLPAlert) && hasChanges && (
+          {(isMetricAlert || isDailyReport || isMaxpainAlert || isMerklAlert || isTurtleAlert || isBinancePriceAlert || isDefiLlamaAlert || isDefiLlamaLPAlert || isDefiLlamaTVLAlert) && hasChanges && (
             <button
               onClick={() =>
                 onUpdate(subscription.id, thresholdPct, windowMinutes, direction, reportHour, thresholdValue, coin)
