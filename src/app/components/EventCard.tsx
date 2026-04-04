@@ -91,7 +91,7 @@ export function EventCard({
   // DeFi Llama: coin = token filter (USDC, USDT, USDC_USDT, ALL_STABLES)
   // DeFi Llama LP: coin = chain filter (Sui, Ethereum, ALL, etc.)
   // DeFi Llama TVL: coin = protocol slug
-  const [coin, setCoin] = useState(isMerklAlert ? "ALL" : isTurtleAlert ? "ALL" : isDefiLlamaAlert ? "USDC_USDT" : isDefiLlamaLPAlert ? "ALL" : "BTC");
+  const [coin, setCoin] = useState(isMerklAlert ? "ALL" : isTurtleAlert ? "ALL" : isDefiLlamaAlert ? "USDC_USDT" : isDefiLlamaLPAlert ? "ALL" : isDefiLlamaTVLAlert ? "" : "BTC");
 
   const inputCls =
     "w-14 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-center text-sm focus:border-brand focus:outline-none";
