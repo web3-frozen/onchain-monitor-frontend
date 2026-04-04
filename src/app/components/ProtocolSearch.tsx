@@ -53,14 +53,12 @@ export function ProtocolSearch({ value, onChange, className }: Props) {
   }, [value]);
 
   const search = useCallback(async (q: string) => {
-    if (!q || q.length < 2) {
-      setResults([]);
-      setIsOpen(false);
-      return;
-    }
     setLoading(true);
     try {
-      const res = await fetch(`${BASE}/api/defillama/protocols/search?q=${encodeURIComponent(q)}`);
+      const url = q
+        ? `${BASE}/api/defillama/protocols/search?q=${encodeURIComponent(q)}`
+        : `${BASE}/api/defillama/protocols/search`;
+      const res = await fetch(url);
       if (res.ok) {
         const data: Protocol[] = await res.json();
         setResults(data);
@@ -113,7 +111,7 @@ export function ProtocolSearch({ value, onChange, className }: Props) {
         type="text"
         value={displayName}
         onChange={handleInputChange}
-        onFocus={() => { if (results.length > 0) setIsOpen(true); }}
+        onFocus={() => { if (results.length > 0) setIsOpen(true); else search(query); }}
         onKeyDown={handleKeyDown}
         placeholder="Search protocol..."
         className={className || "w-40 px-1.5 py-0.5 bg-black border border-white/20 rounded text-white text-sm focus:border-brand focus:outline-none"}
