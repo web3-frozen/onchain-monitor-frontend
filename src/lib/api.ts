@@ -88,4 +88,8 @@ export const api = {
       body: JSON.stringify({ tg_chat_id: tgChatId }),
     });
   },
+
+  searchDefiLlamaProtocols(query: string): Promise<{ name: string; slug: string; tvl: number; logo: string; category: string; chains: string[] }[]> {
+    return request(`/api/defillama/protocols/search?q=${encodeURIComponent(query)}`);
+  },
 };

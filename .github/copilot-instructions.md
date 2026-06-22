@@ -51,7 +51,7 @@ The frontend maps this to chain names for display.
 Current mapping:
 | API Category | Display Chain | Projects (source labels) |
 |---|---|---|
-| `general` | General | Fear & Greed, MaxPain, Merkl, Turtle, Binance, DeFi Llama |
+| `general` | General | Fear & Greed, MaxPain, Merkl, Turtle, Binance, DeFi Llama, DeFi Llama LP |
 | `altura` | Hyperliquid | Altura |
 | `neverland` | Monad | Neverland |
 
@@ -82,6 +82,16 @@ DeFi Llama alerts use a dedicated `isDefiLlamaAlert` UI with parameters:
 
 When adding a new stablecoin yield source, reuse `isDefiLlamaAlert` if it follows this pattern.
 
+### DeFi Llama LP Alert UI Pattern
+
+DeFi Llama LP alerts use a dedicated `isDefiLlamaLPAlert` UI with parameters:
+- `coin` → chain filter (ALL, Sui, Ethereum, Arbitrum, Base, Optimism, BSC, Polygon, Avalanche, Solana, Sonic, Berachain)
+- `thresholdValue` → min reward APY %
+- `thresholdPct` → min TVL in millions (0 allowed for new pools with no TVL)
+- `direction` → always "any"
+
+When adding a new LP/DEX reward source, reuse `isDefiLlamaLPAlert` if it follows this pattern.
+
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
@@ -105,6 +115,7 @@ npm run test    # Tests (placeholder)
 2. **Source labels on every card**: Users must always be able to identify which data source an alert comes from
 3. **Preview isolation**: Vercel previews use mock data only — no connection to production backend (security)
 4. **Category → Chain mapping**: API categories are project names; frontend maps them to chain names for user-facing display
+5. **Build version display**: Build timestamp injected via `NEXT_PUBLIC_BUILD_TIME` in `next.config.js`, displayed in `page.tsx` header
 
 ## Testing Policy
 
