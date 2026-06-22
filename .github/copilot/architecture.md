@@ -26,6 +26,7 @@ src/app/
   - **Chain-specific** (altura, neverland): drop/increase > X% in Y min
   - **General** (category === "general"): higher/lower than absolute value
 - `_daily_report` — daily reports at user-chosen hour
+- `_defillama_lp_alert` — LP/DEX reward APY alerts with chain filter, reward APY threshold, and TVL threshold
 
 ## Subscription Interface
 ```ts
@@ -37,6 +38,7 @@ interface Subscription {
   direction: string;       // "drop" | "increase" | "higher" | "lower"
   report_hour: number;     // 0-23
   threshold_value: number; // absolute threshold for value alerts
+  coin: string;           // chain filter for LP alerts, action filter for yield alerts
 }
 ```
 
